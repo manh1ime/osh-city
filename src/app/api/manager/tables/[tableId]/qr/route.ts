@@ -28,7 +28,10 @@ export async function GET(
     color: { dark: "#1C1917", light: "#FFFFFF" },
   });
 
-  return new NextResponse(png, {
+  // Преобразуем Node.js Buffer в обычный ArrayBuffer для Web Response API.
+  const body = new Uint8Array(png.byteLength);
+  body.set(png);
+  return new NextResponse(body.buffer, {
     headers: {
       "Content-Type": "image/png",
       "Content-Disposition": `attachment; filename="table-${table.number}-qr.png"`,
