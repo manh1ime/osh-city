@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import {
@@ -18,22 +17,36 @@ function backToLogin(request: NextRequest, area: "staff" | "manager", error: str
 }
 
 export async function POST(request: NextRequest) {
+  let area: "staff" | "manager" = "staff";
+  let stage = "form";
+
   try {
     const form = await request.formData();
-    const area = form.get("area") === "manager" ? "manager" : "staff";
+    area = form.get("area") === "manager" ? "manager" : "staff";
     const email = String(form.get("email") ?? "").toLowerCase().trim();
     const password = String(form.get("password") ?? "");
 
     if (!email || !password) return backToLogin(request, area, "Введите email и пароль");
 
+    stage = "configuration";
+    const configuredPassword = process.env.SEED_DEMO_PASSWORD;
+    if (!configuredPassword) {
+      return backToLogin(request, area, "SEED_DEMO_PASSWORD не настроен в Vercel");
+    }
+    if (password !== configuredPassword) {
+      return backToLogin(request, area, "Неверный email или пароль");
+    }
+
+    stage = "database";
     const user = await prisma.staffUser.findUnique({ where: { email } });
-    if (!user || !user.isActive || !(await bcrypt.compare(password, user.passwordHash))) {
+    if (!user || !user.isActive) {
       return backToLogin(request, area, "Неверный email или пароль");
     }
     if (area === "manager" && user.role !== "MANAGER") {
       return backToLogin(request, area, "Нет доступа в панель менеджера");
     }
 
+    stage = "session";
     const token = await signSession({
       userId: user.id,
       name: user.name,
@@ -42,11 +55,7 @@ export async function POST(request: NextRequest) {
       restaurantId: user.restaurantId,
     });
 
-    await prisma.staffUser.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
-
+    stage = "response";
     const response = NextResponse.redirect(
       new URL(area === "manager" ? "/manager" : "/staff/orders", request.url),
       303,
@@ -64,9 +73,7 @@ export async function POST(request: NextRequest) {
     );
     return response;
   } catch (error) {
-    console.error("LOGIN_ROUTE_ERROR", error);
-    const url = new URL("/manager/login", request.url);
-    url.searchParams.set("error", "Ошибка сервера при входе");
-    return NextResponse.redirect(url, 303);
+    console.error(`LOGIN_ROUTE_ERROR stage=${stage}`, error);
+    return backToLogin(request, area, `Ошибка входа на этапе: ${stage}`);
   }
 }
