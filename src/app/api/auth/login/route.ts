@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import {
@@ -28,18 +29,15 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) return backToLogin(request, area, "Введите email и пароль");
 
-    stage = "configuration";
-    const configuredPassword = process.env.SEED_DEMO_PASSWORD;
-    if (!configuredPassword) {
-      return backToLogin(request, area, "SEED_DEMO_PASSWORD не настроен в Vercel");
-    }
-    if (password !== configuredPassword) {
-      return backToLogin(request, area, "Неверный email или пароль");
-    }
-
     stage = "database";
     const user = await prisma.staffUser.findUnique({ where: { email } });
     if (!user || !user.isActive) {
+      return backToLogin(request, area, "Неверный email или пароль");
+    }
+
+    stage = "password";
+    const passwordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!passwordValid) {
       return backToLogin(request, area, "Неверный email или пароль");
     }
     if (area === "manager" && user.role !== "MANAGER") {
