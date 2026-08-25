@@ -9,6 +9,12 @@
   --brand: #365b42;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -84,11 +90,20 @@ select {
 }
 
 /* Safari can give native date controls an intrinsic width wider than a mobile card. */
+input.input,
+select.input,
+textarea.input {
+  box-sizing: border-box !important;
+  -webkit-box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+
 input[type="date"].input {
-  box-sizing: border-box;
-  inline-size: 100%;
-  min-inline-size: 0;
-  max-inline-size: 100%;
+  display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding-inline: 0.75rem;
   font-size: 16px;
 }
 :focus-visible {
