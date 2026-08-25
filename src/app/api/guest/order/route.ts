@@ -22,8 +22,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const existingGuestSession = request.cookies.get(GUEST_COOKIE)?.value;
+  const guestSessionId = existingGuestSession ?? `gs_${crypto.randomUUID()}`;
+
   const result = await createGuestOrder(body, {
-    guestSessionId: request.cookies.get(GUEST_COOKIE)?.value ?? null,
+    guestSessionId,
     ip: clientIp(request),
     userAgent: request.headers.get("user-agent"),
   });
@@ -38,10 +41,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: result.error }, { status });
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     ok: true,
     orderId: result.orderId,
     orderNumber: result.orderNumber,
     totalAmount: result.totalAmount,
   });
+  if (!existingGuestSession) {
+    response.cookies.set(GUEST_COOKIE, guestSessionId, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+  return response;
 }

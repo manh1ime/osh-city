@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const guestSessionId = request.cookies.get(GUEST_COOKIE)?.value ?? null;
+  const existingGuestSession = request.cookies.get(GUEST_COOKIE)?.value;
+  const guestSessionId = existingGuestSession ?? `gs_${crypto.randomUUID()}`;
   const restaurant = await getRestaurant();
   const table = await prisma.table.findUnique({
     where: { token: parsed.data.tableToken },
@@ -79,5 +80,15 @@ export async function POST(request: NextRequest) {
     metadata: { table: table.number, type: parsed.data.type },
   });
 
-  return NextResponse.json({ ok: true, callId: call.id });
+  const response = NextResponse.json({ ok: true, callId: call.id });
+  if (!existingGuestSession) {
+    response.cookies.set(GUEST_COOKIE, guestSessionId, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+  return response;
 }
