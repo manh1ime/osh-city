@@ -105,7 +105,7 @@ export default async function ManagerOrdersPage({
         {formatMoney(revenue, restaurant.currency)}
       </p>
 
-      <form method="get" className="card mt-5 grid gap-3 p-4 sm:grid-cols-4">
+      <form method="get" className="card mt-5 grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
         <div>
           <label className="label" htmlFor="status">
             Статус
@@ -155,7 +155,7 @@ export default async function ManagerOrdersPage({
             ))}
           </select>
         </div>
-        <div className="flex items-end gap-2">
+        <div className="col-span-2 flex items-end gap-2 sm:col-span-1">
           <button type="submit" className="btn btn-dark">
             Применить
           </button>

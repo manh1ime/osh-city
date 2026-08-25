@@ -48,7 +48,7 @@ body {
     @apply rounded-xl border border-cream-200 bg-white shadow-card;
   }
   .input {
-    @apply min-h-11 w-full rounded-lg border border-cream-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-wine-500 focus:ring-2 focus:ring-wine-500/15;
+    @apply min-h-11 min-w-0 w-full max-w-full rounded-lg border border-cream-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-wine-500 focus:ring-2 focus:ring-wine-500/15;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-ink-700;
@@ -81,6 +81,12 @@ input,
 textarea,
 select {
   outline-offset: 2px;
+}
+
+/* Safari can give native date controls an intrinsic width wider than a mobile card. */
+input[type="date"].input {
+  min-width: 0;
+  max-width: 100%;
 }
 :focus-visible {
   outline: 2px solid #55775e;

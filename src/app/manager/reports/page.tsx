@@ -79,7 +79,7 @@ export default async function ManagerReportsPage({
       <p className="mt-1 text-sm text-ink-500">
         Выручка, заказы кухни и бара за выбранный период
       </p>
-      <form className="card mt-5 grid gap-3 p-4 sm:grid-cols-4">
+      <form className="card mt-5 grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
         <div>
           <label className="label">С даты</label>
           <input
@@ -106,7 +106,7 @@ export default async function ManagerReportsPage({
             <option value="BAR">Бар</option>
           </select>
         </div>
-        <div className="flex items-end">
+        <div className="col-span-2 flex items-end sm:col-span-1">
           <button className="btn btn-primary w-full">Показать</button>
         </div>
       </form>

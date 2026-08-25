@@ -53,7 +53,7 @@ export default async function StaffSummaryPage({
       <p className="mt-1 text-sm text-ink-500">
         Личные завершенные заказы и сумма за период
       </p>
-      <form className="card mt-5 grid gap-3 p-4 sm:grid-cols-3">
+      <form className="card mt-5 grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
         <div>
           <label className="label">С даты</label>
           <input
@@ -72,7 +72,7 @@ export default async function StaffSummaryPage({
             defaultValue={iso(to)}
           />
         </div>
-        <div className="flex items-end">
+        <div className="col-span-2 flex items-end sm:col-span-1">
           <button className="btn btn-primary w-full">Показать</button>
         </div>
       </form>
