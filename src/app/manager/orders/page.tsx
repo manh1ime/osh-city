@@ -105,7 +105,7 @@ export default async function ManagerOrdersPage({
         {formatMoney(revenue, restaurant.currency)}
       </p>
 
-      <form method="get" className="card mt-5 grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
+      <form method="get" className="card mt-5 grid max-w-4xl gap-3 p-4 sm:grid-cols-4">
         <div>
           <label className="label" htmlFor="status">
             Статус
@@ -155,7 +155,7 @@ export default async function ManagerOrdersPage({
             ))}
           </select>
         </div>
-        <div className="col-span-2 flex items-end gap-2 sm:col-span-1">
+        <div className="flex items-end gap-2">
           <button type="submit" className="btn btn-dark">
             Применить
           </button>
@@ -249,8 +249,39 @@ export default async function ManagerOrdersPage({
         </div>
       ) : null}
 
-      <div className="card mt-5 overflow-x-auto p-1">
-        <table className="w-full table-fixed text-sm">
+      <div className="mt-5 space-y-3 md:hidden">
+        {orders.map((order) => (
+          <Link
+            key={order.id}
+            href={href({ order: order.id })}
+            className="card block p-4 transition hover:border-wine-500/50"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-ink-900">Заказ {order.orderNumber}</p>
+                <p className="mt-1 text-sm text-ink-500">Стол № {order.table.number}</p>
+              </div>
+              <p className="shrink-0 font-semibold text-ink-900">
+                {formatMoney(order.totalAmount, restaurant.currency)}
+              </p>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <span className={`badge ${statusBadgeClass[order.status]}`}>
+                {staffStatusLabel[order.status]}
+              </span>
+              <span className="text-xs font-semibold text-wine-600">Подробнее →</span>
+            </div>
+          </Link>
+        ))}
+        {orders.length === 0 ? (
+          <div className="card px-4 py-10 text-center text-sm text-ink-400">
+            Нет заказов по выбранным фильтрам
+          </div>
+        ) : null}
+      </div>
+
+      <div className="card mt-5 hidden overflow-x-auto p-1 md:block">
+        <table className="w-full text-sm">
           <thead>
             <tr className="table-head">
               <th className="px-4 py-3 text-left">№</th>

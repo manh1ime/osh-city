@@ -85,8 +85,11 @@ select {
 
 /* Safari can give native date controls an intrinsic width wider than a mobile card. */
 input[type="date"].input {
-  min-width: 0;
-  max-width: 100%;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  font-size: 16px;
 }
 :focus-visible {
   outline: 2px solid #55775e;
