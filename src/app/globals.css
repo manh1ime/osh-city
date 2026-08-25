@@ -1,0 +1,372 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans:
+    Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --brand: #365b42;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+html,
+body {
+  min-height: 100%;
+}
+body {
+  @apply bg-cream-100 text-ink-900 font-sans antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+::selection {
+  background: #cad8ce;
+  color: #1b3124;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-wine-600 text-white hover:bg-wine-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wine-500 focus-visible:ring-offset-2;
+  }
+  .btn-dark {
+    @apply btn bg-ink-900 text-white hover:bg-ink-700;
+  }
+  .btn-ghost {
+    @apply btn border border-cream-300 bg-white text-ink-700 hover:bg-cream-100;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700;
+  }
+  .btn-sm {
+    @apply min-h-9 rounded-lg px-3 py-2 text-[13px];
+  }
+  .card {
+    @apply rounded-xl border border-cream-200 bg-white shadow-card;
+  }
+  .input {
+    @apply min-h-11 w-full rounded-lg border border-cream-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-wine-500 focus:ring-2 focus:ring-wine-500/15;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink-700;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-md px-2 py-1 text-xs font-medium;
+  }
+  .sidebar-link {
+    @apply flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-ink-500 transition-colors hover:bg-cream-100 hover:text-ink-900;
+  }
+  .sidebar-link-active {
+    @apply bg-wine-50 text-wine-700;
+  }
+  .table-head {
+    @apply border-b border-cream-200 bg-cream-100 text-left text-xs font-medium text-ink-500;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  outline-offset: 2px;
+}
+:focus-visible {
+  outline: 2px solid #55775e;
+}
+
+/* Low-contrast graphite theme for the restaurant team. */
+.manager-theme,
+.staff-theme {
+  background: #151817;
+  color: #dde1d8;
+}
+.manager-theme .bg-white,
+.staff-theme .bg-white {
+  background-color: #1c211f !important;
+}
+.manager-theme .bg-cream-100,
+.staff-theme .bg-cream-100 {
+  background-color: #151817 !important;
+}
+.manager-theme .bg-cream-50,
+.staff-theme .bg-cream-50 {
+  background-color: #1c211f !important;
+}
+.manager-theme .bg-cream-200,
+.staff-theme .bg-cream-200 {
+  background-color: #292e2c !important;
+}
+.manager-theme .text-ink-900,
+.staff-theme .text-ink-900 {
+  color: #e3e6de !important;
+}
+.manager-theme .text-ink-700,
+.staff-theme .text-ink-700 {
+  color: #cbd0c6 !important;
+}
+.manager-theme .text-ink-500,
+.staff-theme .text-ink-500 {
+  color: #b5b8b1 !important;
+}
+.manager-theme .text-ink-400,
+.staff-theme .text-ink-400 {
+  color: #90958e !important;
+}
+.manager-theme .border-cream-200,
+.staff-theme .border-cream-200 {
+  border-color: #343b38 !important;
+}
+.manager-theme .border-cream-300,
+.staff-theme .border-cream-300 {
+  border-color: #434b47 !important;
+}
+.manager-theme .card,
+.staff-theme .card {
+  background: #1c211f;
+  border-color: #343b38;
+  box-shadow: none;
+}
+.manager-theme .input,
+.staff-theme .input {
+  background: #171b1a;
+  color: #dde1d8;
+  border-color: #434b47;
+}
+.manager-theme .btn-ghost,
+.staff-theme .btn-ghost {
+  background: #222725;
+  color: #dde1d8;
+  border-color: #4a524e;
+}
+.manager-theme .btn-ghost:hover,
+.staff-theme .btn-ghost:hover {
+  background: #2b322f;
+}
+.manager-theme .table-head,
+.staff-theme .table-head {
+  background: #242a27;
+  color: #b5b8b1;
+  border-color: #343b38;
+}
+.manager-theme .sidebar-link,
+.staff-theme .sidebar-link {
+  color: #bfc3bc;
+}
+.manager-theme .sidebar-link:hover,
+.staff-theme .sidebar-link:hover {
+  background: #272e2b;
+  color: #e3e6de;
+}
+.manager-theme .sidebar-link-active,
+.staff-theme .sidebar-link-active {
+  background: #203d2b;
+  color: #e0f1e4;
+}
+.manager-theme select option,
+.staff-theme select option {
+  background: #1c211f;
+  color: #f3f4ef;
+}
+.manager-theme header,
+.staff-theme header {
+  background: rgba(24, 28, 26, 0.96) !important;
+  border-color: #303834 !important;
+}
+.manager-theme aside {
+  background: #181c1a !important;
+  border-color: #303834 !important;
+}
+.manager-theme .bg-emerald-50 {
+  background: #1f3528 !important;
+  color: #b6d7c0 !important;
+}
+.manager-theme .bg-red-50,
+.staff-theme .bg-red-50 {
+  background: #3a2424 !important;
+  color: #f1b3b3 !important;
+}
+
+/* Guest area uses the same calm charcoal palette, with subdued text and no bright white panels. */
+.guest-theme {
+  background: #121514;
+  color: #e4e6df;
+}
+.guest-theme .bg-white {
+  background-color: #1b201e !important;
+}
+.guest-theme .bg-cream-50,
+.guest-theme .bg-cream-100 {
+  background-color: #151918 !important;
+}
+.guest-theme .bg-cream-200 {
+  background-color: #252c28 !important;
+}
+.guest-theme .text-ink-900 {
+  color: #e9ebe4 !important;
+}
+.guest-theme .text-ink-700 {
+  color: #d2d5cd !important;
+}
+.guest-theme .text-ink-600,
+.guest-theme .text-ink-500 {
+  color: #aeb4aa !important;
+}
+.guest-theme .text-ink-400 {
+  color: #858d83 !important;
+}
+.guest-theme .border-cream-200 {
+  border-color: #303934 !important;
+}
+.guest-theme .border-cream-300 {
+  border-color: #414b45 !important;
+}
+.guest-theme .card {
+  background: #1b201e;
+  border-color: #303934;
+  box-shadow: none;
+}
+.guest-theme .input {
+  background: #202623;
+  color: #e4e6df;
+  border-color: #414b45;
+}
+.guest-theme .btn-ghost {
+  background: #202623;
+  color: #e4e6df;
+  border-color: #414b45;
+}
+.guest-theme header,
+.guest-theme .sticky {
+  background-color: #171b19 !important;
+  border-color: #303934 !important;
+}
+.guest-theme .bg-wine-50 {
+  background: #1d3024 !important;
+  color: #c1dcc8 !important;
+}
+.guest-theme .bg-red-50 {
+  background: #3a2424 !important;
+  color: #f1b3b3 !important;
+}
+.guest-theme .text-white {
+  color: #f0f1ea !important;
+}
+
+@keyframes cart-target-bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  70% {
+    transform: scale(0.97);
+  }
+}
+
+.cart-target-bounce {
+  animation: cart-target-bounce 320ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* «Водопад»: тёмная восточная подача гостевого меню. */
+.guest-theme {
+  background-color: #111713;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(183, 131, 62, 0.08), transparent 28rem),
+    linear-gradient(135deg, rgba(183, 131, 62, 0.025) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(183, 131, 62, 0.025) 25%, transparent 25%);
+  background-size: auto, 32px 32px, 32px 32px;
+}
+.guest-theme .guest-display {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -0.015em;
+}
+.guest-theme header,
+.guest-theme .sticky {
+  background-color: rgba(18, 24, 20, 0.96) !important;
+}
+.guest-theme .guest-menu-card {
+  background:
+    linear-gradient(145deg, rgba(35, 43, 38, 0.98), rgba(25, 31, 28, 0.98)) !important;
+  border-color: rgba(183, 131, 62, 0.28) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+.guest-theme .guest-menu-card:hover {
+  border-color: rgba(210, 160, 88, 0.58) !important;
+}
+.guest-theme .bg-wine-600 {
+  background-color: #9a6a2d !important;
+}
+.guest-theme .hover\:bg-wine-700:hover,
+.guest-theme .bg-wine-700 {
+  background-color: #7f5523 !important;
+}
+.guest-theme .focus\:border-wine-500:focus {
+  border-color: #b7833e !important;
+}
+.guest-theme .bg-wine-50 {
+  background: rgba(183, 131, 62, 0.13) !important;
+  color: #e3c28d !important;
+}
+.guest-theme .text-wine-700 {
+  color: #e3c28d !important;
+}
+.guest-theme section > div:first-child::after {
+  content: "";
+  display: block;
+  width: 52px;
+  height: 1px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, #b7833e, transparent);
+}
+.guest-theme article img {
+  filter: saturate(0.94) contrast(1.04);
+}
+
+
+/* Читаемые hover-состояния в тёмных панелях персонала и менеджера. */
+.manager-theme .hover\:bg-cream-100:hover,
+.staff-theme .hover\:bg-cream-100:hover {
+  background-color: #29312d !important;
+  color: #f1f3ed !important;
+}
+.manager-theme .hover\:bg-wine-50:hover,
+.staff-theme .hover\:bg-wine-50:hover {
+  background-color: #2a3b30 !important;
+  color: #e3c28d !important;
+}
+.manager-theme .hover\:text-ink-700:hover,
+.staff-theme .hover\:text-ink-700:hover {
+  color: #f1f3ed !important;
+}
+.manager-theme button:hover,
+.staff-theme button:hover,
+.manager-theme a:hover,
+.staff-theme a:hover {
+  text-shadow: none;
+}

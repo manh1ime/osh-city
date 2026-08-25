@@ -1,0 +1,38 @@
+import { NextResponse } from "next/server";
+import QRCode from "qrcode";
+import { requireManager } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { tableMenuUrl } from "@/lib/restaurant";
+
+/** Скачивание QR-кода стола в PNG. */
+export async function GET(
+  _request: Request,
+  { params }: { params: { tableId: string } },
+) {
+  const session = await requireManager("tables");
+  const table = await prisma.table.findFirst({
+    where: { id: params.tableId, restaurantId: session.restaurantId },
+  });
+  if (!table) {
+    return NextResponse.json(
+      { ok: false, error: "Стол не найден" },
+      { status: 404 },
+    );
+  }
+
+  const png = await QRCode.toBuffer(tableMenuUrl(table.token), {
+    type: "png",
+    width: 900,
+    margin: 2,
+    errorCorrectionLevel: "M",
+    color: { dark: "#1C1917", light: "#FFFFFF" },
+  });
+
+  return new NextResponse(png, {
+    headers: {
+      "Content-Type": "image/png",
+      "Content-Disposition": `attachment; filename="table-${table.number}-qr.png"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}

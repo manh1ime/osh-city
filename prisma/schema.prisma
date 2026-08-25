@@ -1,0 +1,267 @@
+// Prisma schema: «Водопад» QR ordering system
+// PostgreSQL by default. Для локального запуска без Postgres можно поменять provider на "sqlite".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum OrderStatus {
+  NEW
+  ACCEPTED
+  SENT_TO_KITCHEN
+  COMPLETED
+  CANCELED
+}
+
+enum StaffRole {
+  WAITER
+  MANAGER
+}
+
+enum WaiterCallStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+enum WaiterCallType {
+  WAITER
+  BILL
+  HELP
+}
+
+model Restaurant {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  description       String?
+  address           String?
+  logoUrl           String?
+  coverImageUrl     String?
+  primaryColor      String   @default("#8B2E2E")
+  currency          String   @default("₽")
+  isOrderingEnabled  Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tables           Table[]
+  categories       Category[]
+  menuItems        MenuItem[]
+  orders           Order[]
+  staff            StaffUser[]
+  waiterCalls      WaiterCall[]
+  auditLogs        AuditLog[]
+  securityEvents   SecurityEvent[]
+  securitySettings SecuritySetting?
+}
+
+model SecuritySetting {
+  id                        String   @id @default(cuid())
+  restaurantId              String   @unique
+  duplicateOrderWindowSec   Int      @default(60)
+  maxOrdersPerWindow        Int      @default(3)
+  orderWindowMinutes        Int      @default(5)
+  maxCallsPerWindow         Int      @default(5)
+  callWindowMinutes         Int      @default(5)
+  requireWaiterConfirmation Boolean  @default(true)
+  qrTokenLength             Int      @default(14)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Table {
+  id           String   @id @default(cuid())
+  restaurantId String
+  number       Int
+  zone         String?
+  token        String   @unique
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant     Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders         Order[]
+  waiterCalls    WaiterCall[]
+  securityEvents SecurityEvent[]
+
+  @@unique([restaurantId, number])
+  @@index([restaurantId])
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  description  String?
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItems  MenuItem[]
+
+  @@index([restaurantId, sortOrder])
+}
+
+model MenuItem {
+  id           String   @id @default(cuid())
+  restaurantId String
+  categoryId   String
+  name         String
+  description  String?
+  ingredients  String?
+  allergens    String?
+  price        Int // цена в минимальных единицах (рубли, целые)
+  weight       String?
+  imageUrl     String?
+  badges       String? // CSV: "Хит,Новинка"
+  isActive     Boolean  @default(true)
+  isStopListed Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orderItems OrderItem[]
+
+  @@index([restaurantId, categoryId])
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  restaurantId      String
+  tableId           String
+  orderNumber       String
+  status            OrderStatus @default(NEW)
+  totalAmount       Int         @default(0)
+  itemsSignature    String? // для антидубля заказов
+  guestComment      String?
+  guestSessionId    String?
+  guestIpHash       String?
+  userAgentHash     String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  acceptedAt        DateTime?
+  completedAt       DateTime?
+  canceledAt        DateTime?
+  acceptedByUserId  String?
+
+  restaurant     Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table          Table              @relation(fields: [tableId], references: [id], onDelete: Restrict)
+  acceptedBy     StaffUser?         @relation(fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  statusEvents   OrderStatusEvent[]
+
+  @@unique([restaurantId, orderNumber])
+  @@index([restaurantId, status, createdAt])
+}
+
+model OrderItem {
+  id            String  @id @default(cuid())
+  orderId       String
+  menuItemId    String?
+  nameSnapshot  String
+  priceSnapshot Int
+  quantity      Int
+  comment       String?
+  totalPrice    Int
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+model OrderStatusEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  userId    String?
+  note      String?
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+model StaffUser {
+  id           String    @id @default(cuid())
+  restaurantId String
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         StaffRole @default(WAITER)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
+
+  restaurant       Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  acceptedOrders   Order[]
+  closedCalls      WaiterCall[]
+  auditLogs        AuditLog[]
+
+  @@index([restaurantId])
+}
+
+model WaiterCall {
+  id             String           @id @default(cuid())
+  restaurantId   String
+  tableId        String
+  status         WaiterCallStatus @default(NEW)
+  type           WaiterCallType   @default(WAITER)
+  message        String?
+  guestSessionId String?
+  createdAt      DateTime         @default(now())
+  closedAt       DateTime?
+  closedByUserId String?
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table      Table      @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  closedBy   StaffUser? @relation(fields: [closedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([restaurantId, status, createdAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  restaurantId String
+  userId       String?
+  action       String
+  entityType   String
+  entityId     String?
+  metadata     String? // JSON string
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user       StaffUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([restaurantId, createdAt])
+}
+
+model SecurityEvent {
+  id             String   @id @default(cuid())
+  restaurantId   String
+  tableId        String?
+  guestSessionId String?
+  type           String
+  severity       String   @default("warning")
+  metadata       String?
+  createdAt      DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table      Table?     @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@index([restaurantId, createdAt])
+}
