@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+// Prisma, bcrypt и серверные сессии должны выполняться в Node.js Runtime.
+export const runtime = "nodejs";
+
 export const metadata: Metadata = {
   title: "Водопад: заказ со столика",
   description: "Электронное меню и система заказов ресторана «Водопад»",
