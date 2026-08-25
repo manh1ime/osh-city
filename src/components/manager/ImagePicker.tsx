@@ -11,7 +11,7 @@ type Props = {
 
 export function ImagePicker({ name, label, defaultValue = "", help }: Props) {
   const id = useId();
-  const [value, setValue] = useState(defaultValue);
+  const [value, setValue] = useState<string>(defaultValue ?? "");
   const [error, setError] = useState<string | null>(null);
 
   async function select(file: File | undefined) {

@@ -80,7 +80,7 @@ export function GuestMenu({
   const [flyingItem, setFlyingItem] = useState<FlyingItem | null>(null);
   const [flyStarted, setFlyStarted] = useState(false);
   const [cartBounce, setCartBounce] = useState(false);
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const cartButtonRef = useRef<HTMLButtonElement | null>(null);
   const animationKey = useRef(0);
 
