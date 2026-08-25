@@ -118,7 +118,7 @@ export function ManagerShell({
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-[1440px] px-4 py-6 lg:px-8 lg:py-8">
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">
           {children}
         </main>
       </div>

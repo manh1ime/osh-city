@@ -103,12 +103,12 @@ export default async function ManagerDashboardPage() {
             </Link>
           </div>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="table-head">
                   <th className="py-2 text-left">№</th>
-                  <th className="py-2 text-left">Стол</th>
-                  <th className="py-2 text-left">Время</th>
+                  <th className="hidden py-2 text-left sm:table-cell">Стол</th>
+                  <th className="hidden py-2 text-left lg:table-cell">Время</th>
                   <th className="py-2 text-left">Статус</th>
                   <th className="py-2 text-right">Сумма</th>
                 </tr>
@@ -124,18 +124,18 @@ export default async function ManagerDashboardPage() {
                         {order.orderNumber}
                       </Link>
                     </td>
-                    <td className="py-2.5">{order.table.number}</td>
-                    <td className="py-2.5 text-ink-500">
+                    <td className="hidden py-2.5 sm:table-cell">{order.table.number}</td>
+                    <td className="hidden py-2.5 text-ink-500 lg:table-cell">
                       {formatTime(order.createdAt)}
                     </td>
-                    <td className="py-2.5">
+                    <td className="py-2.5 overflow-hidden">
                       <span
                         className={`badge ${statusBadgeClass[order.status]}`}
                       >
                         {staffStatusLabel[order.status]}
                       </span>
                     </td>
-                    <td className="py-2.5 text-right">
+                    <td className="py-2.5 text-right whitespace-nowrap">
                       {formatMoney(order.totalAmount, restaurant.currency)}
                     </td>
                   </tr>

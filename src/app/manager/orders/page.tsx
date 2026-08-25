@@ -250,15 +250,15 @@ export default async function ManagerOrdersPage({
       ) : null}
 
       <div className="card mt-5 overflow-x-auto p-1">
-        <table className="w-full text-sm">
+        <table className="w-full table-fixed text-sm">
           <thead>
             <tr className="table-head">
               <th className="px-4 py-3 text-left">№</th>
               <th className="px-4 py-3 text-left">Стол</th>
-              <th className="px-4 py-3 text-left">Создан</th>
-              <th className="px-4 py-3 text-left">Позиций</th>
+              <th className="hidden px-4 py-3 text-left lg:table-cell">Создан</th>
+              <th className="hidden px-4 py-3 text-left md:table-cell">Позиций</th>
               <th className="px-4 py-3 text-left">Статус</th>
-              <th className="px-4 py-3 text-left">Принял</th>
+              <th className="hidden px-4 py-3 text-left xl:table-cell">Принял</th>
               <th className="px-4 py-3 text-right">Сумма</th>
               <th className="px-4 py-3" />
             </tr>
@@ -268,22 +268,22 @@ export default async function ManagerOrdersPage({
               <tr key={order.id} className="border-t border-cream-200">
                 <td className="px-4 py-3 font-medium">{order.orderNumber}</td>
                 <td className="px-4 py-3">№ {order.table.number}</td>
-                <td className="px-4 py-3 text-ink-500">
+                <td className="hidden px-4 py-3 text-ink-500 lg:table-cell">
                   {formatDateTime(order.createdAt)}
                 </td>
-                <td className="px-4 py-3">{order.items.length}</td>
+                <td className="hidden px-4 py-3 md:table-cell">{order.items.length}</td>
                 <td className="px-4 py-3">
                   <span className={`badge ${statusBadgeClass[order.status]}`}>
                     {staffStatusLabel[order.status]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-ink-500">
+                <td className="hidden px-4 py-3 text-ink-500 xl:table-cell">
                   {order.acceptedBy?.name ?? "-"}
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-right whitespace-nowrap">
                   {formatMoney(order.totalAmount, restaurant.currency)}
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-2 py-3 text-right sm:px-4">
                   <Link
                     href={href({ order: order.id })}
                     className="text-xs font-semibold text-wine-600"
