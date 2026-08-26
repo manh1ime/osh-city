@@ -4,12 +4,16 @@ import type {
   WaiterCallType,
 } from "@prisma/client";
 
+// Vercel renders server components in UTC; the restaurant operates in Moscow time.
+const DISPLAY_TIME_ZONE = "Europe/Moscow";
+
 export function formatMoney(amount: number, currency = "₽"): string {
   return `${new Intl.NumberFormat("ru-RU").format(amount)}\u00a0${currency}`;
 }
 
 export function formatTime(date: Date | string): string {
   return new Date(date).toLocaleTimeString("ru-RU", {
+    timeZone: DISPLAY_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -17,6 +21,7 @@ export function formatTime(date: Date | string): string {
 
 export function formatDateTime(date: Date | string): string {
   return new Date(date).toLocaleString("ru-RU", {
+    timeZone: DISPLAY_TIME_ZONE,
     day: "2-digit",
     month: "2-digit",
     year: "2-digit",
