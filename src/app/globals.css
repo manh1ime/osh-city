@@ -101,9 +101,10 @@ textarea.input {
   max-width: 100% !important;
 }
 
-/* iOS Safari renders date fields as content-box controls. Remove horizontal
+/* iOS Safari renders date and time fields as content-box controls. Remove horizontal
    padding and reserve the border width so they cannot grow beyond the card. */
-input[type="date"].input {
+input[type="date"].input,
+input[type="time"].input {
   display: block;
   width: calc(100% - 2px) !important;
   min-width: 0 !important;
