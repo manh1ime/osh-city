@@ -3,12 +3,13 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import {
-  categoriesSeed,
-  menuItemsSeed,
+  branchesSeed,
+  legacyStaffEmails,
   restaurantSeed,
   staffSeed,
   tablesSeed,
 } from "./seed-data";
+import { categoriesSeed, menuItemsSeed } from "./menu-data";
 
 const prisma = new PrismaClient();
 
@@ -56,6 +57,40 @@ async function main() {
     update: {},
     create: { restaurantId: restaurant.id },
   });
+
+  // Филиалы: Васильевский остров и Садовая улица.
+  const branchIdBySlug = new Map<string, string>();
+  for (const branch of branchesSeed) {
+    const saved = await prisma.branch.upsert({
+      where: { slug: branch.slug },
+      update: {
+        restaurantId: restaurant.id,
+        name: branch.name,
+        address: branch.address,
+        description: branch.description,
+        openTime: branch.openTime,
+        closeTime: branch.closeTime,
+        tablesCount: branch.tablesCount,
+        seatsPerTable: branch.seatsPerTable,
+        sortOrder: branch.sortOrder,
+        isActive: true,
+      },
+      create: {
+        restaurantId: restaurant.id,
+        slug: branch.slug,
+        name: branch.name,
+        address: branch.address,
+        description: branch.description,
+        openTime: branch.openTime,
+        closeTime: branch.closeTime,
+        tablesCount: branch.tablesCount,
+        seatsPerTable: branch.seatsPerTable,
+        sortOrder: branch.sortOrder,
+      },
+    });
+    branchIdBySlug.set(branch.slug, saved.id);
+  }
+  console.log(`→ Филиалов: ${branchIdBySlug.size}`);
 
   // Категории: старые категории скрываем, не удаляя связанные данные.
   await prisma.category.updateMany({
@@ -124,35 +159,71 @@ async function main() {
     }
   }
 
-  // Столы
+  // Столы старого единого зала (без филиала) убираем из работы:
+  // удалять нельзя, на них ссылаются старые заказы.
+  await prisma.table.updateMany({
+    where: { restaurantId: restaurant.id, branchId: null },
+    data: { isActive: false },
+  });
+
+  // Столы: по 12 в каждом филиале, по 4 места.
   for (const table of tablesSeed) {
+    const branchId = branchIdBySlug.get(table.branchSlug);
+    if (!branchId) {
+      throw new Error(`Не найден филиал ${table.branchSlug} для стола ${table.number}`);
+    }
     const existing = await prisma.table.findFirst({
-      where: { restaurantId: restaurant.id, number: table.number },
+      where: { restaurantId: restaurant.id, branchId, number: table.number },
     });
     if (existing) {
       await prisma.table.update({
         where: { id: existing.id },
-        data: { zone: table.zone, isActive: true },
+        data: { zone: table.zone, seats: table.seats, isActive: true },
       });
     } else {
       await prisma.table.create({
         data: {
           restaurantId: restaurant.id,
+          branchId,
           number: table.number,
           zone: table.zone,
+          seats: table.seats,
           token: makeTableToken(table.number),
         },
       });
     }
   }
 
-  // Сотрудники
+  // Сотрудники «Учкудука» теряют доступ, но остаются в истории заказов.
+  if (legacyStaffEmails.length > 0) {
+    const removed = await prisma.staffUser.updateMany({
+      where: {
+        restaurantId: restaurant.id,
+        email: { in: legacyStaffEmails },
+      },
+      data: { isActive: false, branchId: null },
+    });
+    if (removed.count > 0) {
+      console.log(`→ Отключено старых сотрудников: ${removed.count}`);
+    }
+  }
+
+  // Новый персонал «Учкудука» с привязкой к филиалу.
   for (const member of staffSeed) {
+    const branchId = member.branchSlug
+      ? (branchIdBySlug.get(member.branchSlug) ?? null)
+      : null;
+    if (member.branchSlug && !branchId) {
+      throw new Error(
+        `Не найден филиал ${member.branchSlug} для сотрудника ${member.name}`,
+      );
+    }
     await prisma.staffUser.upsert({
       where: { email: member.email },
       update: {
         name: member.name,
         role: member.role,
+        branchId,
         isActive: true,
         passwordHash,
       },
@@ -161,26 +232,32 @@ async function main() {
         name: member.name,
         email: member.email,
         role: member.role,
+        branchId,
         passwordHash,
       },
     });
   }
 
   const tables = await prisma.table.findMany({
-    where: { restaurantId: restaurant.id },
-    orderBy: { number: "asc" },
+    where: { restaurantId: restaurant.id, isActive: true },
+    orderBy: [{ branchId: "asc" }, { number: "asc" }],
+    include: { branch: true },
   });
 
   console.log("\n✅ Seed завершен.\n");
-  console.log("Демо-доступы (пароль: " + password + "):");
+  console.log("Доступы сотрудников (пароль: " + password + "):");
   for (const member of staffSeed) {
-    console.log(`  ${member.role.padEnd(8)} ${member.email}`);
+    const where = member.branchSlug ?? "оба филиала";
+    console.log(
+      `  ${member.role.padEnd(8)} ${member.name.padEnd(12)} ${member.email.padEnd(24)} ${where}`,
+    );
   }
   console.log("\nQR-ссылки столов:");
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://uchkuduk.ru";
   for (const table of tables) {
+    const branchName = table.branch?.name ?? "без филиала";
     console.log(
-      `  Стол ${table.number} (${table.zone ?? "-"}): ${base}/menu/${table.token}`,
+      `  ${branchName}, стол ${table.number} (${table.zone ?? "-"}): ${base}/menu/${table.token}`,
     );
   }
 }

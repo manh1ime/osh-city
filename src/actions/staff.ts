@@ -21,6 +21,9 @@ export async function saveStaffAction(
     ...Object.fromEntries(formData.entries()),
     isActive:
       formData.get("isActive") === "on" || formData.get("isActive") === "true",
+    isNightShift:
+      formData.get("isNightShift") === "on" ||
+      formData.get("isNightShift") === "true",
   });
   if (!parsed.success) return { ok: false, error: firstZodError(parsed.error) };
   const input = parsed.data;
@@ -29,6 +32,21 @@ export async function saveStaffAction(
   const sameEmail = await prisma.staffUser.findUnique({ where: { email } });
   if (sameEmail && sameEmail.id !== input.id) {
     return { ok: false, error: "Сотрудник с таким email уже есть" };
+  }
+
+  // Филиал должен принадлежать тому же ресторану, что и менеджер.
+  const branchId = input.branchId ?? null;
+  if (branchId) {
+    const branch = await prisma.branch.findFirst({
+      where: { id: branchId, restaurantId: session.restaurantId },
+      select: { id: true },
+    });
+    if (!branch) return { ok: false, error: "Филиал не найден" };
+  }
+  // Официант и старший официант всегда работают в конкретном филиале:
+  // без него брони некуда маршрутизировать.
+  if (input.role !== "MANAGER" && !branchId) {
+    return { ok: false, error: "Выберите филиал для официанта" };
   }
 
   if (input.id) {
@@ -55,6 +73,8 @@ export async function saveStaffAction(
         name: input.name,
         email,
         role: input.role,
+        branchId,
+        isNightShift: input.role === "MANAGER" ? false : input.isNightShift,
         isActive: input.isActive,
         ...(input.password
           ? { passwordHash: await hashPassword(input.password) }
@@ -71,8 +91,11 @@ export async function saveStaffAction(
       metadata: {
         name: input.name,
         role: input.role,
+        branchId,
+        isNightShift: input.role === "MANAGER" ? false : input.isNightShift,
         isActive: input.isActive,
         roleChanged: existing.role !== input.role,
+        branchChanged: existing.branchId !== branchId,
         passwordChanged: Boolean(input.password),
       },
     });
@@ -90,6 +113,8 @@ export async function saveStaffAction(
       name: input.name,
       email,
       role: input.role,
+      branchId,
+      isNightShift: input.role === "MANAGER" ? false : input.isNightShift,
       isActive: input.isActive,
       passwordHash: await hashPassword(input.password),
     },
@@ -101,7 +126,13 @@ export async function saveStaffAction(
     action: "staff.created",
     entityType: "StaffUser",
     entityId: created.id,
-    metadata: { name: created.name, email: created.email, role: created.role },
+    metadata: {
+      name: created.name,
+      email: created.email,
+      role: created.role,
+      branchId: created.branchId,
+      isNightShift: created.isNightShift,
+    },
   });
 
   revalidateStaff();

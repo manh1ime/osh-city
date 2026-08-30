@@ -1,19 +1,48 @@
 /**
- * ДАННЫЕ РЕСТОРАНА «ВОДОПАД».
- * Первый клиент проекта: все данные и идентификаторы относятся к ресторану «Водопад».
+ * ДАННЫЕ РЕСТОРАНА «УЧКУДУК».
+ * Первый клиент проекта: все данные и идентификаторы относятся к ресторану «Учкудук».
  */
 
 export const restaurantSeed = {
-  name: "Водопад",
-  slug: "vodopad",
+  name: "Учкудук",
+  slug: "uchkuduk",
   description: "Восточная кухня, приготовленная с теплом и щедростью",
-  address: "",
+  address: "Санкт-Петербург",
   currency: "₽",
-  primaryColor: "#B7833E",
+  primaryColor: "#D7AA50",
   logoUrl: null as string | null,
-  coverImageUrl: "/images/vodopad-cover.png",
+  coverImageUrl: "/images/eastern-night-hero.webp",
   isOrderingEnabled: true,
 };
+
+/**
+ * Филиалы кафе. Держать в синхроне с DEFAULT_BRANCHES в src/lib/branches.ts:
+ * там такой же список на случай пустой базы без сида.
+ */
+export const branchesSeed = [
+  {
+    slug: "vasilievsky",
+    name: "На Васильевском острове",
+    address: "9-я линия Васильевского острова",
+    description: "Просторный зал рядом с набережной. Работает весь день.",
+    openTime: "00:00",
+    closeTime: "23:59",
+    tablesCount: 12,
+    seatsPerTable: 4,
+    sortOrder: 10,
+  },
+  {
+    slug: "sadovaya",
+    name: "На Садовой",
+    address: "Садовая улица, 44",
+    description: "Уютный зал в центре города, в двух шагах от Сенной.",
+    openTime: "00:00",
+    closeTime: "23:59",
+    tablesCount: 12,
+    seatsPerTable: 4,
+    sortOrder: 20,
+  },
+];
 
 export const categoriesSeed = [
   { name: "Горячие блюда", sortOrder: 10, description: "Сытные блюда восточной и домашней кухни" },
@@ -164,20 +193,74 @@ export const menuItemsSeed = [
   },
 ];
 
-export const tablesSeed = [
-  { number: 1, zone: "Основной зал" },
-  { number: 2, zone: "Основной зал" },
-  { number: 3, zone: "Основной зал" },
-  { number: 4, zone: "Основной зал" },
-  { number: 5, zone: "У водопада" },
-  { number: 6, zone: "У водопада" },
-  { number: 7, zone: "Восточный зал" },
-  { number: 8, zone: "Восточный зал" },
-  { number: 9, zone: "VIP-зал" },
-  { number: 10, zone: "VIP-зал" },
+/**
+ * Столы создаются отдельно для каждого филиала: по 12 штук, нумерация 1..12.
+ * Зона помогает официантам ориентироваться в зале.
+ */
+export function buildTablesSeed(): Array<{
+  branchSlug: string;
+  number: number;
+  zone: string;
+  seats: number;
+}> {
+  const tables: Array<{
+    branchSlug: string;
+    number: number;
+    zone: string;
+    seats: number;
+  }> = [];
+
+  for (const branch of branchesSeed) {
+    for (let number = 1; number <= branch.tablesCount; number += 1) {
+      tables.push({
+        branchSlug: branch.slug,
+        number,
+        zone: number <= 8 ? "Основной зал" : "Восточный зал",
+        seats: branch.seatsPerTable,
+      });
+    }
+  }
+
+  return tables;
+}
+
+export const tablesSeed = buildTablesSeed();
+
+/**
+ * Персонал кафе «Учкудук».
+ * Садовая: Худойберди. Васильевский: Гулнара и Акрам.
+ */
+export const staffSeed = [
+  {
+    name: "Худойберди",
+    email: "hudoyberdi@uchkuduk.ru",
+    // Старший официант на Садовой: принимает брони своего филиала.
+    role: "SENIOR_WAITER" as const,
+    branchSlug: "sadovaya" as string | null,
+  },
+  {
+    name: "Гулнара",
+    email: "gulnara@uchkuduk.ru",
+    // Старший официант на Васильевском.
+    role: "SENIOR_WAITER" as const,
+    branchSlug: "vasilievsky" as string | null,
+  },
+  {
+    name: "Акрам",
+    email: "akram@uchkuduk.ru",
+    role: "WAITER" as const,
+    branchSlug: "vasilievsky" as string | null,
+  },
+  {
+    name: "Менеджер",
+    email: "manager@demo.ru",
+    role: "MANAGER" as const,
+    branchSlug: null as string | null,
+  },
 ];
 
-export const staffSeed = [
-  { name: "Анна", email: "waiter@demo.ru", role: "WAITER" as const },
-  { name: "Максим", email: "manager@demo.ru", role: "MANAGER" as const },
-];
+/**
+ * Сотрудники старого «Учкудука». Сид отключает их доступ,
+ * но не удаляет записи: на них ссылаются старые заказы и аудит.
+ */
+export const legacyStaffEmails = ["waiter@demo.ru"];

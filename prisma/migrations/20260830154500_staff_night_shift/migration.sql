@@ -1,0 +1,2 @@
+ALTER TABLE "StaffUser"
+ADD COLUMN "isNightShift" BOOLEAN NOT NULL DEFAULT false;

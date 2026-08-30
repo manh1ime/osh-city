@@ -38,5 +38,13 @@ export function sectionFromPathname(pathname: string): ManagerSection {
 
 export const roleLabel: Record<SessionRole, string> = {
   WAITER: "Официант",
+  SENIOR_WAITER: "Старший официант",
   MANAGER: "Менеджер",
 };
+
+/** Кто видит раздел бронирований: старшие официанты и менеджер. */
+export const reservationRoles: SessionRole[] = ["SENIOR_WAITER", "MANAGER"];
+
+export function canAccessReservations(role: SessionRole): boolean {
+  return reservationRoles.includes(role);
+}

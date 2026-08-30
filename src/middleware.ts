@@ -58,5 +58,5 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Edge middleware отключён: страницы и действия уже проверяют сессии на сервере.
   // Это устраняет несовместимость Edge runtime на Vercel.
-  matcher: ["/__vodopad_middleware_disabled__"],
+  matcher: ["/__uchkuduk_middleware_disabled__"],
 };

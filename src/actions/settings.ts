@@ -9,24 +9,28 @@ import { firstZodError, settingsSchema } from "@/lib/validation";
 
 export type ActionResult = { ok: boolean; error?: string };
 
-/** Настройки ресторана: бренд, валюта, прием заказов. Только MANAGER. */
+/** Настройки ресторана без изменения закреплённых цвета и валюты. */
 export async function saveSettingsAction(
   formData: FormData,
 ): Promise<ActionResult> {
   const session = await requireRole(["MANAGER"]);
+  const restaurant = await getRestaurant();
+  if (restaurant.id !== session.restaurantId) {
+    return { ok: false, error: "Ресторан не найден" };
+  }
+
+  // Цвет и валюта закреплены в конфигурации «Учкудука» и не принимаются
+  // из формы, поэтому их нельзя изменить подменой запроса.
   const parsed = settingsSchema.safeParse({
     ...Object.fromEntries(formData.entries()),
+    primaryColor: restaurant.primaryColor,
+    currency: restaurant.currency,
     isOrderingEnabled:
       formData.get("isOrderingEnabled") === "on" ||
       formData.get("isOrderingEnabled") === "true",
   });
   if (!parsed.success) return { ok: false, error: firstZodError(parsed.error) };
   const input = parsed.data;
-
-  const restaurant = await getRestaurant();
-  if (restaurant.id !== session.restaurantId) {
-    return { ok: false, error: "Ресторан не найден" };
-  }
 
   await prisma.restaurant.update({
     where: { id: restaurant.id },
@@ -36,8 +40,6 @@ export async function saveSettingsAction(
       address: input.address || null,
       logoUrl: input.logoUrl || null,
       coverImageUrl: input.coverImageUrl || null,
-      primaryColor: input.primaryColor,
-      currency: input.currency,
       isOrderingEnabled: input.isOrderingEnabled,
     },
   });
@@ -50,8 +52,6 @@ export async function saveSettingsAction(
     entityId: restaurant.id,
     metadata: {
       name: input.name,
-      currency: input.currency,
-      primaryColor: input.primaryColor,
       isOrderingEnabled: input.isOrderingEnabled,
       orderingChanged: restaurant.isOrderingEnabled !== input.isOrderingEnabled,
     },

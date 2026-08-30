@@ -65,6 +65,32 @@ export const createOrderSchema = z.object({
 });
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
+/** Предзаказ блюд к бронированию. Цена также никогда не принимается с клиента. */
+export const createReservationPreorderSchema = z.object({
+  reservationCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .min(6)
+    .max(12)
+    .regex(/^[A-Z0-9]+$/, "Некорректный код брони"),
+  timing: z.enum(["SERVE_ON_ARRIVAL", "PREPARE_AFTER_SEATING"]),
+  comment: plainText(ORDER_LIMITS.orderCommentMax).optional().nullable(),
+  items: z
+    .array(
+      z.object({
+        menuItemId: cuidLike,
+        quantity: z.number().int().min(1).max(ORDER_LIMITS.maxQuantityPerItem),
+        comment: plainText(ORDER_LIMITS.itemCommentMax).optional().nullable(),
+      }),
+    )
+    .min(1, "Корзина пуста")
+    .max(
+      ORDER_LIMITS.maxPositions,
+      `Максимум ${ORDER_LIMITS.maxPositions} позиций в заказе`,
+    ),
+});
+
 export const waiterCallSchema = z.object({
   tableToken: z.string().min(8).max(80),
   type: z.enum(["WAITER", "BILL", "HELP"]).default("WAITER"),
@@ -109,16 +135,35 @@ export const tableSchema = z.object({
 
 export const staffSchema = z.object({
   id: cuidLike.optional(),
-  name: plainText(80).refine((value) => value.length > 1, "Укажите имя"),
+
+  name: plainText(80).refine(
+    (value) => value.length > 1,
+    "Укажите имя",
+  ),
+
   email: z.string().email("Некорректный email").max(120),
-  role: z.enum(["WAITER", "MANAGER"]),
+
+  role: z.enum([
+    "WAITER",
+    "SENIOR_WAITER",
+    "MANAGER",
+  ]),
+
+  branchId: z
+    .union([cuidLike, z.literal("")])
+    .optional()
+    .transform((value) => (value ? value : null)),
+
   password: z
     .string()
     .min(6, "Минимум 6 символов")
     .max(72)
     .optional()
     .or(z.literal("")),
+
   isActive: z.coerce.boolean().default(true),
+
+  isNightShift: z.coerce.boolean().default(false),
 });
 
 export const settingsSchema = z.object({
@@ -140,6 +185,52 @@ export const securitySettingsSchema = z.object({
   callWindowMinutes: z.coerce.number().int().min(1).max(120),
   requireWaiterConfirmation: z.coerce.boolean().default(true),
   qrTokenLength: z.coerce.number().int().min(10).max(40),
+});
+
+/** Гостевое бронирование стола с лендинга. */
+export const reservationSchema = z.object({
+  branchSlug: z
+    .string()
+    .min(2)
+    .max(60)
+    .regex(/^[a-z0-9-]+$/, "Некорректный филиал"),
+  name: plainText(80).refine((value) => value.length > 1, "Укажите имя"),
+  phone: z
+    .string()
+    .max(30)
+    .transform((value) => value.replace(/[^\d+]/g, ""))
+    .refine(
+      (value) => /^\+?\d{10,15}$/.test(value),
+      "Укажите корректный номер телефона",
+    ),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Выберите дату"),
+  time: z.string().regex(/^\d{2}:\d{2}$/, "Выберите время"),
+  // За столом 4 посадочных места.
+  guests: z.coerce
+    .number()
+    .int()
+    .min(1, "Минимум 1 гость")
+    .max(4, "За столом 4 места. Для большей компании оставьте комментарий"),
+  comment: plainText(300).optional().nullable(),
+});
+export type ReservationInput = z.infer<typeof reservationSchema>;
+
+/** Поиск своих броней: гость вводит телефон, по которому бронировал. */
+export const reservationLookupSchema = z.object({
+  phone: z
+    .string()
+    .max(30)
+    .transform((value) => value.replace(/[^\d+]/g, ""))
+    .refine(
+      (value) => /^\+?\d{10,15}$/.test(value),
+      "Укажите корректный номер телефона",
+    ),
+});
+
+/** Смена статуса брони со стороны старшего официанта. */
+export const reservationStatusSchema = z.object({
+  reservationId: cuidLike,
+  status: z.enum(["PENDING", "CONFIRMED", "SEATED", "CANCELED", "NO_SHOW"]),
 });
 
 export function firstZodError(error: z.ZodError): string {

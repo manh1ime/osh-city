@@ -118,30 +118,6 @@ export function SettingsForm({ values }: { values: SettingsValues }) {
           label="Фотография ресторана"
           defaultValue={values.coverImageUrl}
         />
-        <div>
-          <label className="label" htmlFor="primaryColor">
-            Основной цвет
-          </label>
-          <input
-            id="primaryColor"
-            name="primaryColor"
-            type="color"
-            className="input h-12"
-            defaultValue={values.primaryColor}
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="currency">
-            Валюта
-          </label>
-          <input
-            id="currency"
-            name="currency"
-            className="input"
-            defaultValue={values.currency}
-            required
-          />
-        </div>
         <div className="sm:col-span-2 rounded-xl bg-cream-100 p-4">
           <label className="flex items-center gap-3 text-sm font-medium">
             <input

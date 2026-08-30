@@ -1,17 +1,17 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: vodopad_db
+    container_name: uchkuduk_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: vodopad
-      POSTGRES_PASSWORD: vodopad
-      POSTGRES_DB: vodopad
+      POSTGRES_USER: uchkuduk
+      POSTGRES_PASSWORD: uchkuduk
+      POSTGRES_DB: uchkuduk
     ports:
       # 5433 на хосте, чтобы не конфликтовать с локально установленным PostgreSQL
       - "${DB_PORT:-5433}:5432"
     volumes:
-      - vodopad_pgdata:/var/lib/postgresql/data
+      - uchkuduk_pgdata:/var/lib/postgresql/data
 
 volumes:
-  vodopad_pgdata:
+  uchkuduk_pgdata:

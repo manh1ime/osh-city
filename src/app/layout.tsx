@@ -5,8 +5,8 @@ import "./globals.css";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-  title: "Водопад: заказ со столика",
-  description: "Электронное меню и система заказов ресторана «Водопад»",
+  title: "Учкудук: бронь стола и заказ со столика",
+  description: "Кафе «Учкудук»: бронирование стола, электронное меню и заказы в двух филиалах",
   robots: { index: false, follow: false },
 };
 

@@ -24,7 +24,7 @@ export type GuestCategoryDto = {
   items: GuestItemDto[];
 };
 
-type CartLine = { itemId: string; quantity: number; comment: string };
+type CartLine = { itemId: string; quantity: number; comment: string; variant?: string };
 type FlyingItem = {
   key: number;
   imageUrl: string | null;
@@ -33,6 +33,9 @@ type FlyingItem = {
   endX: number;
   endY: number;
 };
+
+const DOBRY_FLAVORS = ["Апельсин", "Вишня", "Мультифрукт", "Томатный", "Яблочный"] as const;
+const isDobryJuice = (item: GuestItemDto) => item.name.trim().toLocaleLowerCase("ru-RU") === "сок добрый";
 
 const LIMITS = {
   itemComment: 150,
@@ -49,6 +52,7 @@ export function GuestMenu({
   restaurant,
   table,
   tableToken,
+  reservation,
   categories,
 }: {
   restaurant: {
@@ -58,12 +62,16 @@ export function GuestMenu({
     currency: string;
     isOrderingEnabled: boolean;
   };
-  table: { number: number; zone: string | null };
-  tableToken: string;
+  table?: { number: number; zone: string | null };
+  tableToken?: string;
+  reservation?: { code: string; dateLabel: string; timeLabel: string };
   categories: GuestCategoryDto[];
 }) {
   const router = useRouter();
-  const storageKey = `vodopad_cart_${tableToken}`;
+  const isReservationMenu = Boolean(reservation);
+  const storageKey = reservation
+    ? `uchkuduk_reservation_cart_${reservation.code}`
+    : `uchkuduk_cart_${tableToken}`;
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [search, setSearch] = useState("");
@@ -71,6 +79,9 @@ export function GuestMenu({
   const [openItem, setOpenItem] = useState<GuestItemDto | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [orderComment, setOrderComment] = useState("");
+  const [preorderTiming, setPreorderTiming] = useState<
+    "SERVE_ON_ARRIVAL" | "PREPARE_AFTER_SEATING"
+  >("SERVE_ON_ARRIVAL");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [callState, setCallState] = useState<
@@ -162,13 +173,14 @@ export function GuestMenu({
     quantity = 1,
     comment = "",
     origin?: DOMRect,
+    variant = "",
   ) {
     const item = itemsById.get(itemId);
     if (!item || item.isStopListed) return;
     animateToCart(item, origin);
     setCart((prev) => {
       const existing = prev.find(
-        (line) => line.itemId === itemId && line.comment === comment,
+        (line) => line.itemId === itemId && line.comment === comment && (line.variant ?? "") === variant,
       );
       if (existing) {
         return prev.map((line) =>
@@ -186,7 +198,7 @@ export function GuestMenu({
       if (prev.length >= LIMITS.maxPositions) return prev;
       return [
         ...prev,
-        { itemId, quantity: Math.min(LIMITS.maxQuantity, quantity), comment },
+        { itemId, quantity: Math.min(LIMITS.maxQuantity, quantity), comment, variant: variant || undefined },
       ];
     });
   }
@@ -226,32 +238,48 @@ export function GuestMenu({
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch("/api/guest/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tableToken,
-          comment: orderComment,
-          // Цены на сервер не отправляются: только id, количество и комментарий
-          items: cart.map((line) => ({
-            menuItemId: line.itemId,
-            quantity: line.quantity,
-            comment: line.comment || undefined,
-          })),
-        }),
-      });
+      const response = await fetch(
+        isReservationMenu ? "/api/guest/reservation-order" : "/api/guest/order",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...(isReservationMenu
+              ? {
+                  reservationCode: reservation?.code,
+                  timing: preorderTiming,
+                }
+              : { tableToken }),
+            comment: orderComment,
+            // Цены на сервер не отправляются: только id, количество и комментарий
+            items: cart.map((line) => ({
+              menuItemId: line.itemId,
+              quantity: line.quantity,
+              comment: [line.variant ? `Вкус: ${line.variant}` : "", line.comment].filter(Boolean).join(" · ") || undefined,
+            })),
+          }),
+        },
+      );
       const payload = (await response.json()) as {
         ok: boolean;
         orderId?: string;
+        preorderId?: string;
         error?: string;
       };
-      if (!response.ok || !payload.ok || !payload.orderId) {
+      const createdId = isReservationMenu
+        ? payload.preorderId
+        : payload.orderId;
+      if (!response.ok || !payload.ok || !createdId) {
         setError(payload.error ?? "Не удалось отправить заказ");
         setSubmitting(false);
         return;
       }
       window.localStorage.removeItem(storageKey);
-      router.push(`/order/${payload.orderId}`);
+      router.push(
+        isReservationMenu
+          ? `/reservation/${reservation?.code}`
+          : `/order/${payload.orderId}`,
+      );
     } catch {
       setError("Нет связи с сервером. Попробуйте еще раз.");
       setSubmitting(false);
@@ -259,6 +287,7 @@ export function GuestMenu({
   }
 
   async function callWaiter(type: "WAITER" | "BILL") {
+    if (!tableToken) return;
     setCallState("sending");
     try {
       const response = await fetch("/api/guest/call", {
@@ -293,25 +322,42 @@ export function GuestMenu({
               {restaurant.name}
             </p>
             <p className="mt-0.5 text-xs text-ink-400">
-              Стол {table.number}
-              {table.zone ? ` · ${table.zone}` : ""}
+              {reservation ? (
+                <>
+                  Предзаказ к брони {reservation.code} · {reservation.dateLabel}{" "}
+                  в {reservation.timeLabel}
+                </>
+              ) : (
+                <>
+                  Стол {table?.number}
+                  {table?.zone ? ` · ${table.zone}` : ""}
+                </>
+              )}
             </p>
           </div>
           <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
             <Link
-              href={`/menu/${tableToken}/activity`}
+              href={
+                reservation
+                  ? `/reservation/${reservation.code}`
+                  : `/menu/${tableToken}/activity`
+              }
               className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 py-2.5 text-center text-sm font-medium text-ink-700 transition hover:bg-cream-100 sm:flex-none"
             >
-              Мои заказы
+              {reservation ? "Моя бронь" : "Мои заказы"}
             </Link>
-            <button
-              type="button"
-              onClick={() => callWaiter("WAITER")}
-              disabled={callState === "sending"}
-              className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 text-sm font-medium text-ink-700 transition hover:bg-cream-100 disabled:opacity-50 sm:flex-none"
-            >
-              {callState === "sending" ? "Отправляем..." : "Позвать официанта"}
-            </button>
+            {!reservation ? (
+              <button
+                type="button"
+                onClick={() => callWaiter("WAITER")}
+                disabled={callState === "sending"}
+                className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 text-sm font-medium text-ink-700 transition hover:bg-cream-100 disabled:opacity-50 sm:flex-none"
+              >
+                {callState === "sending"
+                  ? "Отправляем..."
+                  : "Позвать официанта"}
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -350,7 +396,9 @@ export function GuestMenu({
           <div className="mt-3 flex items-start gap-3 rounded-lg border border-cream-200 bg-white px-4 py-3.5">
             <span className="mt-1 block h-2 w-2 shrink-0 rounded-full bg-wine-600" />
             <p className="text-sm leading-relaxed text-ink-600">
-              Заказ увидит официант и подтвердит перед передачей на кухню.
+              {reservation
+                ? "Предзаказ увидит старший официант вашего филиала. Способ приготовления вы выберете в корзине."
+                : "Заказ увидит официант и подтвердит перед передачей на кухню."}
             </p>
           </div>
           {callMessage && callState !== "idle" ? (
@@ -499,6 +547,10 @@ export function GuestMenu({
                           const image = event.currentTarget
                             .closest("article")
                             ?.querySelector("img");
+                          if (isDobryJuice(item)) {
+                            setOpenItem(item);
+                            return;
+                          }
                           addToCart(
                             item.id,
                             1,
@@ -556,8 +608,8 @@ export function GuestMenu({
           currency={restaurant.currency}
           disabled={!restaurant.isOrderingEnabled}
           onClose={() => setOpenItem(null)}
-          onAdd={(quantity, comment, origin) => {
-            addToCart(openItem.id, quantity, comment, origin);
+          onAdd={(quantity, comment, origin, variant) => {
+            addToCart(openItem.id, quantity, comment, origin, variant);
             setOpenItem(null);
           }}
         />
@@ -587,8 +639,14 @@ export function GuestMenu({
             </div>
 
             <p className="mb-3 text-xs text-ink-500">
-              Стол {table.number}
-              {table.zone ? ` · ${table.zone}` : ""}
+              {reservation ? (
+                <>Бронь {reservation.code}</>
+              ) : (
+                <>
+                  Стол {table?.number}
+                  {table?.zone ? ` · ${table.zone}` : ""}
+                </>
+              )}
             </p>
 
             <div className="space-y-2">
@@ -603,6 +661,11 @@ export function GuestMenu({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="font-medium text-ink-900">{item.name}</p>
+                        {line.variant ? (
+                          <p className="mt-0.5 text-xs font-semibold text-wine-700">
+                            Вкус: {line.variant}
+                          </p>
+                        ) : null}
                         {line.comment ? (
                           <p className="mt-0.5 text-xs italic text-ink-500">
                             {line.comment}
@@ -619,7 +682,7 @@ export function GuestMenu({
                           onClick={() => changeQuantity(index, -1)}
                           className="h-9 w-9 rounded-lg border border-cream-300 text-lg leading-none text-ink-700"
                         >
-                          −
+                          -
                         </button>
                         <span className="w-6 text-center text-sm font-semibold">
                           {line.quantity}
@@ -667,6 +730,54 @@ export function GuestMenu({
               </p>
             </div>
 
+            {reservation ? (
+              <fieldset className="mt-4">
+                <legend className="label">Когда готовить блюда</legend>
+                <div className="space-y-2">
+                  <label className="flex cursor-pointer gap-3 rounded-xl border border-cream-300 p-3 text-sm">
+                    <input
+                      type="radio"
+                      name="preorderTiming"
+                      value="SERVE_ON_ARRIVAL"
+                      checked={preorderTiming === "SERVE_ON_ARRIVAL"}
+                      onChange={() => setPreorderTiming("SERVE_ON_ARRIVAL")}
+                      className="mt-1"
+                    />
+                    <span>
+                      <strong className="block text-ink-900">
+                        Подать сразу после прихода
+                      </strong>
+                      <span className="text-ink-500">
+                        Кухня приготовит заранее, блюда подадут после вашей
+                        посадки за стол.
+                      </span>
+                    </span>
+                  </label>
+                  <label className="flex cursor-pointer gap-3 rounded-xl border border-cream-300 p-3 text-sm">
+                    <input
+                      type="radio"
+                      name="preorderTiming"
+                      value="PREPARE_AFTER_SEATING"
+                      checked={preorderTiming === "PREPARE_AFTER_SEATING"}
+                      onChange={() =>
+                        setPreorderTiming("PREPARE_AFTER_SEATING")
+                      }
+                      className="mt-1"
+                    />
+                    <span>
+                      <strong className="block text-ink-900">
+                        Готовить после прихода
+                      </strong>
+                      <span className="text-ink-500">
+                        Старший официант отправит заказ на кухню, когда отметит,
+                        что вы уже за столом.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+            ) : null}
+
             {error ? (
               <p className="mt-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
                 {error}
@@ -687,7 +798,11 @@ export function GuestMenu({
               }
               className="btn-primary mt-4 w-full"
             >
-              {submitting ? "Отправляем..." : "Отправить официанту"}
+              {submitting
+                ? "Отправляем..."
+                : reservation
+                  ? "Оформить предзаказ"
+                  : "Отправить официанту"}
             </button>
             <p className="mt-3 text-center text-[11px] text-ink-400">
               Оплата: как обычно, у официанта или на кассе
@@ -710,10 +825,11 @@ function ItemSheet({
   currency: string;
   disabled: boolean;
   onClose: () => void;
-  onAdd: (quantity: number, comment: string, origin: DOMRect) => void;
+  onAdd: (quantity: number, comment: string, origin: DOMRect, variant: string) => void;
 }) {
   const [quantity, setQuantity] = useState(1);
   const [comment, setComment] = useState("");
+  const [variant, setVariant] = useState<string>(() => isDobryJuice(item) ? DOBRY_FLAVORS[0] : "");
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink-900/35 p-0 backdrop-blur-[2px] animate-fade-in sm:items-center sm:p-6">
@@ -772,6 +888,15 @@ function ItemSheet({
             ) : null}
           </div>
 
+          {isDobryJuice(item) ? (
+            <div className="mt-5">
+              <label className="label" htmlFor="item-variant">Вкус сока</label>
+              <select id="item-variant" value={variant} onChange={(event) => setVariant(event.target.value)} className="input">
+                {DOBRY_FLAVORS.map((flavor) => <option key={flavor} value={flavor}>{flavor}</option>)}
+              </select>
+            </div>
+          ) : null}
+
           <div className="mt-5">
             <label className="label" htmlFor="item-comment">
               Комментарий к блюду
@@ -799,7 +924,7 @@ function ItemSheet({
                 onClick={() => setQuantity((value) => Math.max(1, value - 1))}
                 className="h-10 w-10 rounded-lg border border-cream-300 bg-white text-xl leading-none transition hover:bg-cream-100"
               >
-                −
+                -
               </button>
               <span className="w-6 text-center text-base font-semibold">
                 {quantity}
@@ -829,6 +954,7 @@ function ItemSheet({
                 quantity,
                 comment.trim(),
                 event.currentTarget.getBoundingClientRect(),
+                variant,
               )
             }
             className="btn-primary mt-5 w-full"

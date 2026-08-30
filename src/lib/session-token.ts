@@ -3,7 +3,7 @@
  * Работает и в Node runtime, и в Edge runtime (middleware).
  */
 
-export type SessionRole = "WAITER" | "MANAGER";
+export type SessionRole = "WAITER" | "SENIOR_WAITER" | "MANAGER";
 
 export type SessionPayload = {
   userId: string;
@@ -14,11 +14,14 @@ export type SessionPayload = {
   exp: number; // unix seconds
 };
 
-export const STAFF_SESSION_COOKIE = "vodopad_staff_session";
-export const MANAGER_SESSION_COOKIE = "vodopad_manager_session";
-// Раздельные cookie для сотрудников, менеджеров и гостей ресторана «Водопад».
-export const SESSION_COOKIE = "vodopad_session";
-export const GUEST_COOKIE = "vodopad_guest";
+export const STAFF_SESSION_COOKIE = "uchkuduk_staff_session";
+export const MANAGER_SESSION_COOKIE = "uchkuduk_manager_session";
+// Раздельные cookie для сотрудников, менеджеров и гостей кафе «Учкудук».
+export const SESSION_COOKIE = "uchkuduk_session";
+export const GUEST_COOKIE = "uchkuduk_guest";
+// Телефон гостя для раздела «Мои бронирования». Без пароля и без аккаунта.
+export const GUEST_PHONE_COOKIE = "uchkuduk_guest_phone";
+export const GUEST_PHONE_TTL_SECONDS = 60 * 60 * 24 * 180; // полгода
 export const SESSION_TTL_SECONDS = 60 * 60 * 12; // 12 часов: смена
 
 const encoder = new TextEncoder();

@@ -1,0 +1,244 @@
+/* Панели персонала в стиле «Восточная ночь» */
+.staff-theme,
+.eastern-night-staff-panel,
+.eastern-night-manager-panel,
+body:has(a[href^="/manager/"]) {
+  --panel-bg: #0b101b;
+  --panel-surface: #151c2b;
+  --panel-surface-2: #1d2637;
+  --panel-line: rgba(255, 255, 255, 0.1);
+  --panel-gold: #d7aa50;
+  --panel-gold-light: #f1ce7b;
+  --panel-text: #f6ecdc;
+  --panel-muted: #9fa5af;
+  --panel-green: #58c49a;
+  --panel-red: #e8858f;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 92% 0, rgba(99, 58, 122, 0.2), transparent 31rem),
+    radial-gradient(circle at 0 78%, rgba(20, 104, 111, 0.13), transparent 34rem),
+    var(--panel-bg) !important;
+  color: var(--panel-text) !important;
+}
+
+/* Верхняя панель официанта */
+.staff-theme > header,
+.eastern-night-staff-panel > header {
+  background: rgba(11, 16, 27, 0.88) !important;
+  border-color: var(--panel-line) !important;
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(20px);
+}
+.staff-theme > header > div,
+.eastern-night-staff-panel > header > div {
+  min-height: 78px;
+}
+.staff-theme > header > div::before,
+.eastern-night-staff-panel > header > div::before {
+  content: "У";
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--panel-gold-light), var(--panel-gold));
+  color: #18130b;
+  font: 20px Georgia, serif;
+  box-shadow: 0 0 0 5px rgba(215, 170, 80, 0.08);
+}
+.staff-theme > header nav,
+.eastern-night-staff-panel > header nav {
+  padding: 5px;
+  border: 1px solid var(--panel-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.staff-theme > header nav a,
+.staff-theme > header nav button,
+.eastern-night-staff-panel > header nav a,
+.eastern-night-staff-panel > header nav button {
+  min-height: 38px;
+  border-radius: 10px !important;
+  color: var(--panel-muted) !important;
+}
+.staff-theme > header nav a:hover,
+.staff-theme > header nav button:hover,
+.eastern-night-staff-panel > header nav a:hover,
+.eastern-night-staff-panel > header nav button:hover {
+  background: var(--panel-surface-2) !important;
+  color: var(--panel-text) !important;
+}
+
+/* Заголовки и служебные статусы */
+.staff-theme h1,
+.staff-theme h2,
+.eastern-night-manager-panel h1,
+.eastern-night-manager-panel h2,
+body:has(a[href^="/manager/"]) h1,
+body:has(a[href^="/manager/"]) h2 {
+  color: var(--panel-text) !important;
+  letter-spacing: -0.025em;
+}
+.staff-theme h1,
+.eastern-night-manager-panel h1,
+body:has(a[href^="/manager/"]) h1 {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 400 !important;
+}
+.staff-theme .bg-emerald-500,
+.eastern-night-manager-panel .bg-emerald-500 { background: var(--panel-green) !important; box-shadow: 0 0 18px rgba(88,196,154,.5); }
+
+/* Вкладки заказов */
+.staff-theme .no-scrollbar button,
+.eastern-night-staff-panel .no-scrollbar button {
+  border-color: var(--panel-line) !important;
+  background: var(--panel-surface) !important;
+  color: var(--panel-muted) !important;
+  border-radius: 12px !important;
+}
+.staff-theme .no-scrollbar button.bg-wine-600,
+.eastern-night-staff-panel .no-scrollbar button.bg-wine-600 {
+  background: linear-gradient(135deg, var(--panel-gold-light), var(--panel-gold)) !important;
+  color: #18130b !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 28px rgba(215,170,80,.18);
+}
+
+/* Карточки заказов, вызовов и броней */
+.staff-theme main article,
+.staff-theme main > div > div[class*="grid"] > div[class*="border"],
+.staff-theme main section[class*="rounded"],
+.eastern-night-staff-panel main article {
+  background: linear-gradient(155deg, rgba(27,35,52,.98), rgba(19,25,39,.98)) !important;
+  border-color: var(--panel-line) !important;
+  box-shadow: 0 20px 55px rgba(0,0,0,.2);
+}
+.staff-theme main article:hover,
+.staff-theme main > div > div[class*="grid"] > div[class*="border"]:hover {
+  border-color: rgba(215,170,80,.3) !important;
+  transform: translateY(-2px);
+}
+.staff-theme main article > div.bg-wine-600,
+.staff-theme main div[class*="bg-wine-600"][class*="px-4"] {
+  background: linear-gradient(90deg, #6e4259, #8c596e) !important;
+  color: #fff4e6 !important;
+}
+.staff-theme main [class*="bg-\[\#B7833E\]"] {
+  background: rgba(215,170,80,.09) !important;
+  border-color: rgba(215,170,80,.25) !important;
+}
+.staff-theme main [class*="text-\[\#E0B472\]"] { color: var(--panel-gold-light) !important; }
+.staff-theme main .bg-cream-100,
+.staff-theme main .bg-white { background: rgba(255,255,255,.035) !important; }
+.staff-theme main .text-cream-200 { color: #c5bfba !important; }
+.staff-theme main .border-cream-200,
+.staff-theme main .border-cream-300 { border-color: var(--panel-line) !important; }
+
+/* Кнопки действий */
+.staff-theme .btn-primary,
+.eastern-night-manager-panel .btn-primary,
+body:has(a[href^="/manager/"]) .btn-primary {
+  background: linear-gradient(135deg, var(--panel-gold-light), var(--panel-gold)) !important;
+  color: #18130b !important;
+  border: 0 !important;
+  box-shadow: 0 10px 27px rgba(215,170,80,.18);
+}
+.staff-theme .btn-primary:hover,
+.eastern-night-manager-panel .btn-primary:hover,
+body:has(a[href^="/manager/"]) .btn-primary:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.staff-theme .btn-ghost,
+.staff-theme button[class*="border"],
+.eastern-night-manager-panel .btn-ghost,
+body:has(a[href^="/manager/"]) .btn-ghost {
+  border-color: var(--panel-line) !important;
+  color: var(--panel-muted) !important;
+}
+
+/* Менеджер: навигация и рабочая область */
+.eastern-night-manager-panel header,
+.eastern-night-manager-panel aside,
+body:has(a[href^="/manager/"]) header,
+body:has(a[href^="/manager/"]) aside {
+  background: rgba(14,20,33,.94) !important;
+  border-color: var(--panel-line) !important;
+  backdrop-filter: blur(18px);
+}
+.eastern-night-manager-panel aside a,
+body:has(a[href^="/manager/"]) aside a {
+  margin: 3px 8px;
+  border-radius: 11px !important;
+  color: var(--panel-muted) !important;
+}
+.eastern-night-manager-panel aside a:hover,
+body:has(a[href^="/manager/"]) aside a:hover {
+  background: var(--panel-surface-2) !important;
+  color: var(--panel-text) !important;
+}
+.eastern-night-manager-panel .card,
+body:has(a[href^="/manager/"]) .card {
+  background: linear-gradient(155deg, rgba(27,35,52,.98), rgba(19,25,39,.98)) !important;
+  border-color: var(--panel-line) !important;
+  box-shadow: 0 20px 58px rgba(0,0,0,.2) !important;
+}
+
+/* Таблицы менеджера */
+.eastern-night-manager-panel table,
+body:has(a[href^="/manager/"]) table {
+  background: transparent !important;
+  color: var(--panel-text) !important;
+}
+.eastern-night-manager-panel thead,
+body:has(a[href^="/manager/"]) thead {
+  background: #101725 !important;
+}
+.eastern-night-manager-panel th,
+body:has(a[href^="/manager/"]) th {
+  color: var(--panel-gold-light) !important;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border-color: var(--panel-line) !important;
+}
+.eastern-night-manager-panel td,
+.eastern-night-manager-panel tr,
+body:has(a[href^="/manager/"]) td,
+body:has(a[href^="/manager/"]) tr { border-color: var(--panel-line) !important; }
+.eastern-night-manager-panel tbody tr:hover,
+body:has(a[href^="/manager/"]) tbody tr:hover { background: rgba(255,255,255,.025) !important; }
+
+/* Формы и модальные окна менеджера */
+.eastern-night-manager-panel input,
+.eastern-night-manager-panel select,
+.eastern-night-manager-panel textarea,
+body:has(a[href^="/manager/"]) input,
+body:has(a[href^="/manager/"]) select,
+body:has(a[href^="/manager/"]) textarea {
+  background: #101624 !important;
+  color: var(--panel-text) !important;
+  border-color: var(--panel-line) !important;
+}
+.eastern-night-manager-panel input:focus,
+.eastern-night-manager-panel select:focus,
+.eastern-night-manager-panel textarea:focus,
+body:has(a[href^="/manager/"]) input:focus,
+body:has(a[href^="/manager/"]) select:focus,
+body:has(a[href^="/manager/"]) textarea:focus {
+  border-color: var(--panel-gold) !important;
+  box-shadow: 0 0 0 3px rgba(215,170,80,.12) !important;
+}
+
+/* Мобильные панели */
+@media (max-width: 760px) {
+  .staff-theme > header > div::before,
+  .eastern-night-staff-panel > header > div::before { width:38px; height:38px; flex-basis:38px; }
+  .staff-theme > header nav,
+  .eastern-night-staff-panel > header nav { width:100%; overflow-x:auto; flex-wrap:nowrap !important; justify-content:flex-start; }
+  .staff-theme > header nav a,
+  .staff-theme > header nav form,
+  .eastern-night-staff-panel > header nav a,
+  .eastern-night-staff-panel > header nav form { flex:0 0 auto; }
+  .staff-theme main { padding-top:18px !important; }
+  .eastern-night-manager-panel table,
+  body:has(a[href^="/manager/"]) table { min-width:760px; }
+}

@@ -1,3 +1,6 @@
+@import "./eastern-night.css";
+@import "./eastern-night-panels.css";
+@import "./manager-active-status-fix.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -321,7 +324,7 @@ input[type="date"].input {
 }
 
 
-/* «Водопад»: тёмная восточная подача гостевого меню. */
+/* «Учкудук»: тёмная восточная подача гостевого меню. */
 .guest-theme {
   background-color: #111713;
   background-image:
