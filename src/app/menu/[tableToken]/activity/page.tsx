@@ -6,11 +6,12 @@ export const dynamic = "force-dynamic";
 export default async function GuestActivityPage({
   params,
 }: {
-  params: { tableToken: string };
+  params: Promise<{ tableToken: string }>;
 }) {
+  const { tableToken } = await params;
   const [restaurant, table] = await Promise.all([
     getRestaurant(),
-    prisma.table.findUnique({ where: { token: params.tableToken } }),
+    prisma.table.findUnique({ where: { token: tableToken } }),
   ]);
   if (!table || table.restaurantId !== restaurant.id || !table.isActive)
     return (

@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function ReservationMenuPage({
   params,
 }: {
-  params: Promise<{ code: string }> | { code: string };
+  params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
   const restaurant = await getRestaurant();

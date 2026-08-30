@@ -8,3 +8,9 @@ out
 next-env.d.ts
 prisma/dev.db
 prisma/dev.db-journal
+.env.production
+.next/
+node_modules/
+next15-pages-backup-*/
+next15-pages-dump.txt
+fix-next15-all-pages.ps1

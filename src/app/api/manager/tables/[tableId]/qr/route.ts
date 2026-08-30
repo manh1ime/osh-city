@@ -7,11 +7,12 @@ import { tableMenuUrl } from "@/lib/restaurant";
 /** Скачивание QR-кода стола в PNG. */
 export async function GET(
   _request: Request,
-  { params }: { params: { tableId: string } },
+  { params }: { params: Promise<{ tableId: string }> },
 ) {
+  const { tableId } = await params;
   const session = await requireManager("tables");
   const table = await prisma.table.findFirst({
-    where: { id: params.tableId, restaurantId: session.restaurantId },
+    where: { id: tableId, restaurantId: session.restaurantId },
   });
   if (!table) {
     return NextResponse.json(

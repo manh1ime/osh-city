@@ -16,11 +16,12 @@ function InvalidQrScreen() {
           !
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
-          QR-код недействителен
+          QR-РєРѕРґ РЅРµРґРµР№СЃС‚РІРёС‚РµР»РµРЅ
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-ink-500">
-          Обратитесь к сотруднику ресторана. Вам помогут открыть меню или
-          обновят QR-код на столе.
+          РћР±СЂР°С‚РёС‚РµСЃСЊ Рє СЃРѕС‚СЂСѓРґРЅРёРєСѓ СЂРµСЃС‚РѕСЂР°РЅР°.
+          Р’Р°Рј РїРѕРјРѕРіСѓС‚ РѕС‚РєСЂС‹С‚СЊ РјРµРЅСЋ РёР»Рё РѕР±РЅРѕРІСЏС‚
+          QR-РєРѕРґ РЅР° СЃС‚РѕР»Рµ.
         </p>
       </div>
     </main>
@@ -30,19 +31,20 @@ function InvalidQrScreen() {
 export default async function GuestMenuPage({
   params,
 }: {
-  params: { tableToken: string };
+  params: Promise<{ tableToken: string }>;
 }) {
+  const { tableToken } = await params;
   const restaurant = await getRestaurant();
   const table = await prisma.table.findUnique({
-    where: { token: params.tableToken },
+    where: { token: tableToken },
   });
 
   if (!table || table.restaurantId !== restaurant.id || !table.isActive) {
     return <InvalidQrScreen />;
   }
 
-  // guestSessionId выдается middleware и используется дальше в API
-  cookies().get(GUEST_COOKIE);
+  // guestSessionId РІС‹РґР°РµС‚СЃСЏ middleware Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР°Р»СЊС€Рµ РІ API
+  (await cookies()).get(GUEST_COOKIE);
 
   const categories = await getGuestMenu(restaurant.id);
 

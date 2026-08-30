@@ -23,7 +23,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default async function ReservationPage({
   params,
 }: {
-  params: Promise<{ code: string }> | { code: string };
+  params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
   const restaurant = await getRestaurant();

@@ -9,11 +9,12 @@ export const dynamic = "force-dynamic";
 export default async function GuestOrderPage({
   params,
 }: {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 }) {
+  const { orderId } = await params;
   const restaurant = await getRestaurant();
   const order = await prisma.order.findUnique({
-    where: { id: params.orderId },
+    where: { id: orderId },
     include: { items: true, table: true },
   });
 

@@ -6,10 +6,11 @@ export const dynamic = "force-dynamic";
 /** Поллинг статуса заказа для страницы гостя. */
 export async function GET(
   _request: Request,
-  { params }: { params: { orderId: string } },
+  { params }: { params: Promise<{ orderId: string }> },
 ) {
+  const { orderId } = await params;
   const order = await prisma.order.findUnique({
-    where: { id: params.orderId },
+    where: { id: orderId },
     select: { id: true, status: true, updatedAt: true },
   });
   if (!order) {

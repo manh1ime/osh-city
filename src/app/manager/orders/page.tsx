@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { OrderStatus } from "@prisma/client";
+import Link from "next/link";
 import { requireManager } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
@@ -21,27 +21,30 @@ const STATUSES: OrderStatus[] = [
   "CANCELED",
 ];
 
+type ManagerOrdersSearchParams = {
+  status?: string;
+  date?: string;
+  table?: string;
+  order?: string;
+};
+
 export default async function ManagerOrdersPage({
   searchParams,
 }: {
-  searchParams: {
-    status?: string;
-    date?: string;
-    table?: string;
-    order?: string;
-  };
+  searchParams: Promise<ManagerOrdersSearchParams>;
 }) {
+  const query = await searchParams;
   const session = await requireManager("orders");
   const restaurant = await getRestaurant();
 
-  const status = STATUSES.includes(searchParams.status as OrderStatus)
-    ? (searchParams.status as OrderStatus)
+  const status = STATUSES.includes(query.status as OrderStatus)
+    ? (query.status as OrderStatus)
     : undefined;
-  const tableId = searchParams.table || undefined;
+  const tableId = query.table || undefined;
 
   let dateFilter: { gte: Date; lt: Date } | undefined;
-  if (searchParams.date) {
-    const from = new Date(`${searchParams.date}T00:00:00`);
+  if (query.date) {
+    const from = new Date(`${query.date}T00:00:00`);
     if (!Number.isNaN(from.getTime())) {
       const to = new Date(from);
       to.setDate(to.getDate() + 1);
@@ -65,9 +68,12 @@ export default async function ManagerOrdersPage({
       where: { restaurantId: session.restaurantId },
       orderBy: { number: "asc" },
     }),
-    searchParams.order
+    query.order
       ? prisma.order.findFirst({
-          where: { id: searchParams.order, restaurantId: session.restaurantId },
+          where: {
+            id: query.order,
+            restaurantId: session.restaurantId,
+          },
           include: {
             ...orderInclude,
             statusEvents: {
@@ -85,16 +91,18 @@ export default async function ManagerOrdersPage({
   function href(params: Record<string, string | undefined>) {
     const next = new URLSearchParams();
     const merged = {
-      status: status,
-      date: searchParams.date,
+      status,
+      date: query.date,
       table: tableId,
       ...params,
     };
+
     for (const [key, value] of Object.entries(merged)) {
       if (value) next.set(key, value);
     }
-    const query = next.toString();
-    return query ? `/manager/orders?${query}` : "/manager/orders";
+
+    const search = next.toString();
+    return search ? `/manager/orders?${search}` : "/manager/orders";
   }
 
   return (
@@ -105,7 +113,10 @@ export default async function ManagerOrdersPage({
         {formatMoney(revenue, restaurant.currency)}
       </p>
 
-      <form method="get" className="card mt-5 grid max-w-4xl gap-3 p-4 sm:grid-cols-4">
+      <form
+        method="get"
+        className="card mt-5 grid max-w-4xl gap-3 p-4 sm:grid-cols-4"
+      >
         <div>
           <label className="label" htmlFor="status">
             Статус
@@ -124,6 +135,7 @@ export default async function ManagerOrdersPage({
             ))}
           </select>
         </div>
+
         <div>
           <label className="label" htmlFor="date">
             Дата
@@ -132,10 +144,11 @@ export default async function ManagerOrdersPage({
             id="date"
             name="date"
             type="date"
-            defaultValue={searchParams.date ?? ""}
+            defaultValue={query.date ?? ""}
             className="input"
           />
         </div>
+
         <div>
           <label className="label" htmlFor="table">
             Стол
@@ -155,6 +168,7 @@ export default async function ManagerOrdersPage({
             ))}
           </select>
         </div>
+
         <div className="flex items-end gap-2">
           <button type="submit" className="btn btn-dark">
             Применить
@@ -178,6 +192,7 @@ export default async function ManagerOrdersPage({
                 {formatDateTime(selected.createdAt)}
               </p>
             </div>
+
             <div className="flex items-center gap-2">
               <span className={`badge ${statusBadgeClass[selected.status]}`}>
                 {staffStatusLabel[selected.status]}
@@ -213,18 +228,21 @@ export default async function ManagerOrdersPage({
                   </li>
                 ))}
               </ul>
+
               <p className="mt-3 flex justify-between border-t border-cream-200 pt-3 font-semibold">
                 <span>Итог</span>
                 <span>
                   {formatMoney(selected.totalAmount, restaurant.currency)}
                 </span>
               </p>
+
               {selected.guestComment ? (
                 <p className="mt-3 rounded-xl bg-cream-100 p-3 text-sm text-ink-700">
                   Комментарий гостя: {selected.guestComment}
                 </p>
               ) : null}
             </div>
+
             <div>
               <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-400">
                 История статусов
@@ -239,6 +257,7 @@ export default async function ManagerOrdersPage({
                   </li>
                 ))}
               </ul>
+
               {selected.acceptedBy ? (
                 <p className="mt-3 text-sm text-ink-500">
                   Принял: {selected.acceptedBy.name}
@@ -258,21 +277,29 @@ export default async function ManagerOrdersPage({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-semibold text-ink-900">Заказ {order.orderNumber}</p>
-                <p className="mt-1 text-sm text-ink-500">Стол № {order.table.number}</p>
+                <p className="font-semibold text-ink-900">
+                  Заказ {order.orderNumber}
+                </p>
+                <p className="mt-1 text-sm text-ink-500">
+                  Стол № {order.table.number}
+                </p>
               </div>
               <p className="shrink-0 font-semibold text-ink-900">
                 {formatMoney(order.totalAmount, restaurant.currency)}
               </p>
             </div>
+
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className={`badge ${statusBadgeClass[order.status]}`}>
                 {staffStatusLabel[order.status]}
               </span>
-              <span className="text-xs font-semibold text-wine-600">Подробнее →</span>
+              <span className="text-xs font-semibold text-wine-600">
+                Подробнее →
+              </span>
             </div>
           </Link>
         ))}
+
         {orders.length === 0 ? (
           <div className="card px-4 py-10 text-center text-sm text-ink-400">
             Нет заказов по выбранным фильтрам
@@ -286,14 +313,21 @@ export default async function ManagerOrdersPage({
             <tr className="table-head">
               <th className="px-4 py-3 text-left">№</th>
               <th className="px-4 py-3 text-left">Стол</th>
-              <th className="hidden px-4 py-3 text-left lg:table-cell">Создан</th>
-              <th className="hidden px-4 py-3 text-left md:table-cell">Позиций</th>
+              <th className="hidden px-4 py-3 text-left lg:table-cell">
+                Создан
+              </th>
+              <th className="hidden px-4 py-3 text-left md:table-cell">
+                Позиций
+              </th>
               <th className="px-4 py-3 text-left">Статус</th>
-              <th className="hidden px-4 py-3 text-left xl:table-cell">Принял</th>
+              <th className="hidden px-4 py-3 text-left xl:table-cell">
+                Принял
+              </th>
               <th className="px-4 py-3 text-right">Сумма</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
+
           <tbody>
             {orders.map((order) => (
               <tr key={order.id} className="border-t border-cream-200">
@@ -302,7 +336,9 @@ export default async function ManagerOrdersPage({
                 <td className="hidden px-4 py-3 text-ink-500 lg:table-cell">
                   {formatDateTime(order.createdAt)}
                 </td>
-                <td className="hidden px-4 py-3 md:table-cell">{order.items.length}</td>
+                <td className="hidden px-4 py-3 md:table-cell">
+                  {order.items.length}
+                </td>
                 <td className="px-4 py-3">
                   <span className={`badge ${statusBadgeClass[order.status]}`}>
                     {staffStatusLabel[order.status]}
@@ -311,7 +347,7 @@ export default async function ManagerOrdersPage({
                 <td className="hidden px-4 py-3 text-ink-500 xl:table-cell">
                   {order.acceptedBy?.name ?? "-"}
                 </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
+                <td className="whitespace-nowrap px-4 py-3 text-right">
                   {formatMoney(order.totalAmount, restaurant.currency)}
                 </td>
                 <td className="px-2 py-3 text-right sm:px-4">
@@ -324,6 +360,7 @@ export default async function ManagerOrdersPage({
                 </td>
               </tr>
             ))}
+
             {orders.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-10 text-center text-ink-400">

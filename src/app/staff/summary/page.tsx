@@ -9,15 +9,16 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 export default async function StaffSummaryPage({
   searchParams,
 }: {
-  searchParams: { from?: string; to?: string };
+  searchParams: Promise<{ from?: string; to?: string }>;
 }) {
+  const query = await searchParams;
   const session = await requireStaff();
   const restaurant = await getRestaurant();
   const now = new Date();
   const week = new Date(now);
   week.setDate(week.getDate() - 6);
-  const from = new Date(`${searchParams.from || iso(week)}T00:00:00`);
-  const to = new Date(`${searchParams.to || iso(now)}T23:59:59.999`);
+  const from = new Date(`${query.from || iso(week)}T00:00:00`);
+  const to = new Date(`${query.to || iso(now)}T23:59:59.999`);
   const [completed, active] = await Promise.all([
     prisma.order.findMany({
       where: {
