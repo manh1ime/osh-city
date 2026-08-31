@@ -33,7 +33,7 @@ const imageLocation = z
   .refine(
     (value) =>
       value === "" ||
-      value.startsWith("/images/") ||
+      /^\/[a-zA-Z0-9/_\-.%]+$/.test(value) ||
       /^data:image\/(png|jpeg|webp);base64,/.test(value) ||
       z.string().url().safeParse(value).success,
     "Нужна ссылка на изображение",
