@@ -15,6 +15,7 @@ import {
 type RestaurantDto = {
   name: string;
   description: string | null;
+  logoUrl: string | null;
   coverImageUrl: string | null;
 };
 
@@ -122,9 +123,19 @@ export function LandingPage({ restaurant, branches }: Props) {
       {/* Шапка */}
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#121514]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <span className="guest-display text-lg font-semibold tracking-[-0.02em] text-white">
-            {restaurant.name}
-          </span>
+          <div className="flex min-w-0 items-center gap-3">
+            {restaurant.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/images/uchkuduk-logo.webp"
+                alt={`Логотип ${restaurant.name}`}
+                className="h-10 w-10 shrink-0 rounded-lg object-contain"
+              />
+            ) : null}
+            <span className="guest-display truncate text-lg font-semibold tracking-[-0.02em] text-white">
+              {restaurant.name}
+            </span>
+          </div>
           {activeReservationCode ? (
             <Link
               href={`/reservation/${activeReservationCode}`}
@@ -152,6 +163,11 @@ export function LandingPage({ restaurant, branches }: Props) {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/45" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+          <img
+            src="/images/uchkuduk-logo.webp"
+            alt="Логотип Учкудук"
+            className="mb-7 h-auto w-64 max-w-[75vw] rounded-2xl bg-white object-contain p-2 shadow-2xl sm:w-80"
+          />
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/60">
             Санкт-Петербург · два филиала
           </p>

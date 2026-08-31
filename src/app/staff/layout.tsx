@@ -30,14 +30,24 @@ export default async function StaffLayout({
     <div className="staff-theme eastern-night-staff-panel min-h-screen bg-[#151817] text-ink-900">
       <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div>
-            <p className="text-base font-semibold tracking-tight">
-              {restaurant.name}
-            </p>
-            <p className="text-xs text-ink-400">
+          <div className="flex min-w-0 items-center gap-3">
+            {true ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/images/uchkuduk-logo.webp"
+                alt={`Логотип ${restaurant.name}`}
+                className="h-11 w-11 shrink-0 rounded-lg object-contain"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold tracking-tight">
+                {restaurant.name}
+              </p>
+              <p className="text-xs text-ink-400">
               {session.name} · {roleLabel[session.role]} ·{" "}
               {currentStaff?.isNightShift ? "Ночная смена" : "Дневная смена"}
-            </p>
+              </p>
+            </div>
           </div>
           <nav className="flex flex-wrap items-center gap-1 text-sm font-medium">
             <Link

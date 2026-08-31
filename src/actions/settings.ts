@@ -38,7 +38,7 @@ export async function saveSettingsAction(
       name: input.name,
       description: input.description || null,
       address: input.address || null,
-      logoUrl: input.logoUrl || null,
+      logoUrl: "/images/uchkuduk-logo.webp",
       coverImageUrl: input.coverImageUrl || null,
       isOrderingEnabled: input.isOrderingEnabled,
     },
@@ -57,8 +57,11 @@ export async function saveSettingsAction(
     },
   });
 
+  revalidatePath("/");
   revalidatePath("/manager/settings");
   revalidatePath("/manager");
   revalidatePath("/staff/orders");
+  revalidatePath("/menu/[tableToken]", "page");
+  revalidatePath("/reservation/[code]/menu", "page");
   return { ok: true };
 }

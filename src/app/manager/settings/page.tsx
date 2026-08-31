@@ -14,7 +14,6 @@ export default async function ManagerSettingsPage() {
         name: restaurant.name,
         description: restaurant.description,
         address: restaurant.address,
-        logoUrl: restaurant.logoUrl,
         coverImageUrl: restaurant.coverImageUrl,
         primaryColor: restaurant.primaryColor,
         currency: restaurant.currency,

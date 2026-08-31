@@ -23,6 +23,9 @@ function formToObject(formData: FormData): Record<string, unknown> {
 function revalidateMenu() {
   revalidatePath("/manager/menu");
   revalidatePath("/manager");
+  revalidatePath("/", "page");
+  revalidatePath("/menu/[tableToken]", "page");
+  revalidatePath("/reservation/[code]/menu", "page");
 }
 
 /** Создание или обновление блюда (Менеджер/Админ). */

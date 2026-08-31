@@ -58,6 +58,7 @@ export function GuestMenu({
   restaurant: {
     name: string;
     description: string | null;
+    logoUrl: string | null;
     coverImageUrl: string | null;
     currency: string;
     isOrderingEnabled: boolean;
@@ -317,11 +318,20 @@ export function GuestMenu({
     <div className="guest-theme min-h-screen bg-[#121514] pb-16 text-ink-900">
       <header className="border-b border-cream-200 bg-white">
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6">
-          <div className="min-w-0">
-            <p className="truncate text-base font-semibold tracking-tight text-ink-900">
-              {restaurant.name}
-            </p>
-            <p className="mt-0.5 text-xs text-ink-400">
+          <div className="flex min-w-0 items-center gap-3">
+            {restaurant.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/images/uchkuduk-logo.webp"
+                alt={`Логотип ${restaurant.name}`}
+                className="h-11 w-11 shrink-0 rounded-lg object-contain"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold tracking-tight text-ink-900">
+                {restaurant.name}
+              </p>
+              <p className="mt-0.5 text-xs text-ink-400">
               {reservation ? (
                 <>
                   Предзаказ к брони {reservation.code} · {reservation.dateLabel}{" "}
@@ -333,7 +343,8 @@ export function GuestMenu({
                   {table?.zone ? ` · ${table.zone}` : ""}
                 </>
               )}
-            </p>
+              </p>
+            </div>
           </div>
           <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
             <Link

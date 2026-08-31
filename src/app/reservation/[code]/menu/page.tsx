@@ -51,6 +51,7 @@ export default async function ReservationMenuPage({
       restaurant={{
         name: restaurant.name,
         description: restaurant.description,
+        logoUrl: "/images/uchkuduk-logo.webp",
         coverImageUrl: restaurant.coverImageUrl,
         currency: restaurant.currency,
         isOrderingEnabled: restaurant.isOrderingEnabled,

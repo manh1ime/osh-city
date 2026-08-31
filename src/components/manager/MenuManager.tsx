@@ -76,12 +76,14 @@ export function MenuManager({
   }
 
   function submit(formData: FormData) {
+    setError(null);
     startTransition(async () => {
       const result = await saveMenuItemAction(formData);
       if (!result.ok) {
         setError(result.error ?? "Не удалось сохранить");
         return;
       }
+      setError(null);
       setOpen(false);
       setEditing(null);
       router.refresh();
@@ -269,7 +271,11 @@ export function MenuManager({
         title={editing ? "Редактирование блюда" : "Новое блюдо"}
         onClose={() => setOpen(false)}
       >
-        <form action={submit} className="grid gap-4 sm:grid-cols-2">
+        <form
+          key={editing?.id ?? "new-menu-item"}
+          action={submit}
+          className="grid gap-4 sm:grid-cols-2"
+        >
           {editing ? (
             <input type="hidden" name="id" value={editing.id} />
           ) : null}
@@ -410,6 +416,11 @@ export function MenuManager({
             />
             В стоп-листе
           </label>
+          {error ? (
+            <p className="sm:col-span-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
           <div className="sm:col-span-2 flex justify-end gap-2">
             <button
               type="button"

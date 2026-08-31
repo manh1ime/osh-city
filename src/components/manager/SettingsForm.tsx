@@ -9,7 +9,6 @@ export type SettingsValues = {
   name: string;
   description: string | null;
   address: string | null;
-  logoUrl: string | null;
   coverImageUrl: string | null;
   primaryColor: string;
   currency: string;
@@ -108,11 +107,6 @@ export function SettingsForm({ values }: { values: SettingsValues }) {
             defaultValue={values.address ?? ""}
           />
         </div>
-        <ImagePicker
-          name="logoUrl"
-          label="Логотип"
-          defaultValue={values.logoUrl}
-        />
         <ImagePicker
           name="coverImageUrl"
           label="Фотография ресторана"

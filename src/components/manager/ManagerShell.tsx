@@ -51,8 +51,13 @@ export function ManagerShell({
         className={`${mobileOpen ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-cream-200 bg-white px-4 py-5 transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-60 lg:translate-x-0`}
       >
         <div className="flex items-start justify-between px-2">
-          <div>
-            <p className="text-base font-semibold tracking-tight text-ink-900">
+          <div className="min-w-0">
+            <img
+              src="/images/uchkuduk-logo.webp"
+              alt="Логотип Учкудук"
+              className="h-auto w-40 rounded-xl bg-white object-contain p-1"
+            />
+            <p className="mt-2 truncate text-base font-semibold tracking-tight text-ink-900">
               {restaurantName}
             </p>
             <p className="mt-1 text-xs text-ink-400">Управление рестораном</p>

@@ -12,9 +12,11 @@ export default async function ManagerLoginPage({
     <main className="manager-theme flex min-h-screen items-center justify-center bg-[#151817] px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-wine-600">
-            Учкудук
-          </p>
+          <img
+            src="/images/uchkuduk-logo.webp"
+            alt="Логотип Учкудук"
+            className="mx-auto h-auto w-56 rounded-2xl bg-white object-contain p-2 shadow-2xl"
+          />
 
           <h1 className="mt-3 font-display text-3xl text-white">
             Панель менеджера
