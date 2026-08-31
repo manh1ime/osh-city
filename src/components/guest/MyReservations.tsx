@@ -8,6 +8,7 @@ import {
   forgetGuestPhoneAction,
   lookupReservationsAction,
 } from "@/actions/reservations";
+import { preorderStatusLabel } from "@/lib/format";
 
 export type GuestReservationDto = {
   id: string;
@@ -20,6 +21,12 @@ export type GuestReservationDto = {
   guestsLabel: string;
   comment: string | null;
   hostName: string | null;
+  preorders: Array<{
+    id: string;
+    preorderNumber: string;
+    status: "NEW" | "CONFIRMED" | "IN_KITCHEN" | "READY" | "CANCELED";
+    timing: "SERVE_ON_ARRIVAL" | "PREPARE_AFTER_SEATING";
+  }>;
   isPast: boolean;
 };
 
@@ -248,6 +255,28 @@ function ReservationCard({
       ) : null}
       {reservation.comment ? (
         <p className="mt-2 text-sm text-white/45">{reservation.comment}</p>
+      ) : null}
+
+      {reservation.preorders.length > 0 ? (
+        <div className="mt-4 border-t border-white/10 pt-3">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/40">
+            Предзаказы: {reservation.preorders.length}
+          </p>
+          <div className="mt-2 space-y-2">
+            {reservation.preorders.map((preorder) => (
+              <Link
+                key={preorder.id}
+                href={`/reservation/${reservation.code}#preorders`}
+                className="flex items-center justify-between gap-3 rounded-lg bg-white/5 px-3 py-2 text-sm transition hover:bg-white/10"
+              >
+                <span className="text-white/75">№ {preorder.preorderNumber}</span>
+                <span className="text-right text-xs text-[#E0B472]">
+                  {preorderStatusLabel[preorder.status]}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
       ) : null}
 
       <div className="mt-4 flex flex-wrap gap-3">

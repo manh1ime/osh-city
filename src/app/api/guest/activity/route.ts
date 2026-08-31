@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { GUEST_COOKIE } from "@/lib/session-token";
+import { getRestaurant } from "@/lib/restaurant";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +11,9 @@ export async function GET(request: NextRequest) {
   if (!guestSessionId || !tableToken) {
     return NextResponse.json({ ok: true, orders: [], calls: [] });
   }
+  const restaurant = await getRestaurant();
   const table = await prisma.table.findUnique({ where: { token: tableToken } });
-  if (!table || !table.isActive) {
+  if (!table || table.restaurantId !== restaurant.id || !table.isActive) {
     return NextResponse.json(
       { ok: false, error: "Стол не найден" },
       { status: 404 },

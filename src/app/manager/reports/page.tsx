@@ -32,6 +32,7 @@ type ManagerReportsSearchParams = {
   from?: string;
   to?: string;
   area?: string;
+  branch?: string;
 };
 
 export default async function ManagerReportsPage({
@@ -45,10 +46,12 @@ export default async function ManagerReportsPage({
   const dates = range(query.from, query.to);
   const area =
     query.area === "BAR" || query.area === "KITCHEN" ? query.area : "ALL";
+  const branchId = query.branch || undefined;
 
-  const orders = await prisma.order.findMany({
+  const [orders, branches] = await Promise.all([prisma.order.findMany({
     where: {
       restaurantId: session.restaurantId,
+      ...(branchId ? { table: { branchId } } : {}),
       completedAt: { gte: dates.from, lte: dates.to },
       status: "COMPLETED",
     },
@@ -66,7 +69,11 @@ export default async function ManagerReportsPage({
       },
     },
     orderBy: { completedAt: "desc" },
-  });
+  }), prisma.branch.findMany({
+    where: { restaurantId: session.restaurantId, isActive: true },
+    select: { id: true, name: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  })]);
 
   const rows = orders
     .map((order) => {
@@ -99,7 +106,14 @@ export default async function ManagerReportsPage({
         Выручка, заказы кухни и бара за выбранный период
       </p>
 
-      <form className="card mt-5 grid max-w-4xl gap-3 p-4 sm:grid-cols-4">
+      <form method="get" className="card mt-5 grid max-w-5xl gap-3 p-4 sm:grid-cols-5">
+        <div>
+          <label className="label" htmlFor="reports-branch">Филиал</label>
+          <select id="reports-branch" className="input" name="branch" defaultValue={branchId ?? ""}>
+            <option value="">Все филиалы</option>
+            {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
+          </select>
+        </div>
         <div>
           <label className="label" htmlFor="reports-from">
             С даты

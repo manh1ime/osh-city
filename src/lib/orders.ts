@@ -7,6 +7,7 @@ import { checkOrderRateLimit } from "./rate-limit";
 import { getRestaurant, getSecuritySettings } from "./restaurant";
 import { createOrderSchema, firstZodError } from "./validation";
 import type { SessionRole } from "./session-token";
+import { staffStatusLabel } from "./format";
 
 export type CreateOrderResult =
   | { ok: true; orderId: string; orderNumber: string; totalAmount: number }
@@ -27,7 +28,7 @@ export const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
 
 export const orderInclude = {
   items: { orderBy: { nameSnapshot: "asc" } },
-  table: true,
+  table: { include: { branch: true } },
   acceptedBy: { select: { id: true, name: true, role: true } },
 } as const;
 
@@ -205,14 +206,26 @@ export async function changeOrderStatus(input: {
     name: string;
   };
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const order = await prisma.order.findUnique({ where: { id: input.orderId } });
+  const order = await prisma.order.findUnique({
+    where: { id: input.orderId },
+    include: { table: { select: { branchId: true } } },
+  });
   if (!order || order.restaurantId !== input.user.restaurantId) {
     return { ok: false, error: "Заказ не найден" };
+  }
+  if (input.user.role !== "MANAGER") {
+    const staff = await prisma.staffUser.findUnique({
+      where: { id: input.user.userId },
+      select: { branchId: true },
+    });
+    if (!staff?.branchId || order.table.branchId !== staff.branchId) {
+      return { ok: false, error: "Этот заказ другого филиала" };
+    }
   }
   if (!allowedTransitions[order.status].includes(input.nextStatus)) {
     return {
       ok: false,
-      error: `Недопустимый переход статуса: ${order.status} → ${input.nextStatus}`,
+      error: `Недопустимый переход статуса: ${staffStatusLabel[order.status]} → ${staffStatusLabel[input.nextStatus]}`,
     };
   }
 
@@ -263,17 +276,28 @@ export async function changeOrderStatus(input: {
 }
 
 /** Заказы для панели персонала (видны всем сотрудникам смены). */
-export async function getStaffFeed(restaurantId: string) {
+export async function getStaffFeed(
+  restaurantId: string,
+  branchId?: string | null,
+) {
   const since = new Date(Date.now() - 1000 * 60 * 60 * 12);
   const [orders, calls] = await Promise.all([
     prisma.order.findMany({
-      where: { restaurantId, createdAt: { gte: since } },
+      where: {
+        restaurantId,
+        createdAt: { gte: since },
+        ...(branchId ? { table: { branchId } } : {}),
+      },
       include: orderInclude,
       orderBy: { createdAt: "desc" },
       take: 120,
     }),
     prisma.waiterCall.findMany({
-      where: { restaurantId, createdAt: { gte: since } },
+      where: {
+        restaurantId,
+        createdAt: { gte: since },
+        ...(branchId ? { table: { branchId } } : {}),
+      },
       include: { table: true, closedBy: { select: { id: true, name: true } } },
       orderBy: { createdAt: "desc" },
       take: 60,

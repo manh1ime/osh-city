@@ -68,6 +68,22 @@ export const callTypeLabel: Record<WaiterCallType, string> = {
   HELP: "Нужна помощь",
 };
 
+export const reservationStatusLabel = {
+  PENDING: "Ожидает подтверждения",
+  CONFIRMED: "Подтверждена",
+  SEATED: "Гости за столом",
+  CANCELED: "Отменена",
+  NO_SHOW: "Гости не пришли",
+} as const;
+
+export const preorderStatusLabel = {
+  NEW: "Новый",
+  CONFIRMED: "Принят",
+  IN_KITCHEN: "Готовится",
+  READY: "Готов",
+  CANCELED: "Отменен",
+} as const;
+
 /** Сколько минут/секунд прошло с момента события. */
 export function elapsedLabel(
   from: Date | string,

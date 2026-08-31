@@ -138,10 +138,10 @@ export function LandingPage({ restaurant, branches }: Props) {
           </div>
           {activeReservationCode ? (
             <Link
-              href={`/reservation/${activeReservationCode}`}
+              href="/my-reservations"
               className="btn btn-primary btn-sm"
             >
-              Моя бронь
+              Мои бронирования
             </Link>
           ) : (
             <a href="#booking" className="btn btn-primary btn-sm">
@@ -301,6 +301,12 @@ export function LandingPage({ restaurant, branches }: Props) {
                   className="btn min-h-11 border border-white/20 text-white hover:bg-white/10"
                 >
                   Открыть бронь
+                </Link>
+                <Link
+                  href="/my-reservations"
+                  className="btn min-h-11 border border-white/20 text-white hover:bg-white/10"
+                >
+                  Все бронирования
                 </Link>
                 <button
                   type="button"

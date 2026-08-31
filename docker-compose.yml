@@ -4,14 +4,37 @@ services:
     container_name: uchkuduk_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: uchkuduk
-      POSTGRES_PASSWORD: uchkuduk
-      POSTGRES_DB: uchkuduk
-    ports:
-      # 5433 на хосте, чтобы не конфликтовать с локально установленным PostgreSQL
-      - "${DB_PORT:-5433}:5432"
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env.production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: ${POSTGRES_DB:-uchkuduk}
     volumes:
       - uchkuduk_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uchkuduk_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-uchkuduk}?schema=public
+      DIRECT_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-uchkuduk}?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env.production}
+      HASH_SALT: ${HASH_SALT:?Set HASH_SALT in .env.production}
+      RESTAURANT_SLUG: ${RESTAURANT_SLUG:-uchkuduk}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?Set NEXT_PUBLIC_APP_URL in .env.production}
+    command: ["sh", "/app/docker-entrypoint.sh"]
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
 
 volumes:
   uchkuduk_pgdata:

@@ -16,12 +16,10 @@ function InvalidQrScreen() {
           !
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
-          QR-РєРѕРґ РЅРµРґРµР№СЃС‚РІРёС‚РµР»РµРЅ
+          QR-код недействителен
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-ink-500">
-          РћР±СЂР°С‚РёС‚РµСЃСЊ Рє СЃРѕС‚СЂСѓРґРЅРёРєСѓ СЂРµСЃС‚РѕСЂР°РЅР°.
-          Р’Р°Рј РїРѕРјРѕРіСѓС‚ РѕС‚РєСЂС‹С‚СЊ РјРµРЅСЋ РёР»Рё РѕР±РЅРѕРІСЏС‚
-          QR-РєРѕРґ РЅР° СЃС‚РѕР»Рµ.
+          Обратитесь к сотруднику ресторана. Вам помогут открыть меню или обновят QR-код на столе.
         </p>
       </div>
     </main>
@@ -37,13 +35,14 @@ export default async function GuestMenuPage({
   const restaurant = await getRestaurant();
   const table = await prisma.table.findUnique({
     where: { token: tableToken },
+    include: { branch: true },
   });
 
   if (!table || table.restaurantId !== restaurant.id || !table.isActive) {
     return <InvalidQrScreen />;
   }
 
-  // guestSessionId РІС‹РґР°РµС‚СЃСЏ middleware Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР°Р»СЊС€Рµ РІ API
+  // guestSessionId выдается middleware и используется дальше в API.
   (await cookies()).get(GUEST_COOKIE);
 
   const categories = await getGuestMenu(restaurant.id);
@@ -51,7 +50,12 @@ export default async function GuestMenuPage({
   return (
     <GuestMenu
       tableToken={table.token}
-      table={{ number: table.number, zone: table.zone }}
+       table={{
+         number: table.number,
+         zone: table.zone,
+         branchName: table.branch?.name ?? "Филиал не задан",
+         branchAddress: table.branch?.address ?? null,
+       }}
       restaurant={{
         name: restaurant.name,
         description: restaurant.description,

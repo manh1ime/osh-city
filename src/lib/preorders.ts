@@ -1,10 +1,15 @@
 import "server-only";
 
 import { ReservationPreorderStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { writeAudit } from "./audit";
 import { prisma } from "./db";
 import { getRestaurant } from "./restaurant";
-import { createReservationPreorderSchema, firstZodError } from "./validation";
+import {
+  createReservationPreorderSchema,
+  firstZodError,
+  normalizeRussianPhone,
+} from "./validation";
 
 export type CreateReservationPreorderResult =
   | { ok: true; preorderId: string; preorderNumber: string }
@@ -15,7 +20,8 @@ export async function createReservationPreorder(
   rawInput: unknown,
   guestPhone: string | null,
 ): Promise<CreateReservationPreorderResult> {
-  if (!guestPhone) {
+  const normalizedPhone = normalizeRussianPhone(guestPhone ?? "");
+  if (!normalizedPhone) {
     return {
       ok: false,
       error: "Сначала откройте свою бронь по номеру телефона",
@@ -37,7 +43,7 @@ export async function createReservationPreorder(
     where: {
       code: input.reservationCode,
       restaurantId: restaurant.id,
-      guestPhone,
+      guestPhone: normalizedPhone,
       status: { in: ["PENDING", "CONFIRMED"] },
       reservedAt: { gt: new Date() },
     },
@@ -108,7 +114,14 @@ export async function createReservationPreorder(
       });
 
       return { ok: true, preorderId: preorder.id, preorderNumber };
-    } catch {
+    } catch (error) {
+      if (
+        !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+        error.code !== "P2002"
+      ) {
+        console.error("createReservationPreorder failed", error);
+        return { ok: false, error: "Не удалось отправить предзаказ" };
+      }
       // Повторяем только генерацию номера при редкой конкурентной коллизии.
     }
   }

@@ -1,7 +1,7 @@
 "use server";
 
 import { randomInt } from "node:crypto";
-import { ReservationPreorderStatus } from "@prisma/client";
+import { Prisma, ReservationPreorderStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { writeAudit } from "@/lib/audit";
@@ -26,7 +26,19 @@ import {
   reservationLookupSchema,
   reservationSchema,
   reservationStatusSchema,
+  normalizeRussianPhone,
 } from "@/lib/validation";
+
+const RESERVATION_TRANSITIONS: Record<
+  "PENDING" | "CONFIRMED" | "SEATED" | "CANCELED" | "NO_SHOW",
+  Array<"PENDING" | "CONFIRMED" | "SEATED" | "CANCELED" | "NO_SHOW">
+> = {
+  PENDING: ["CONFIRMED", "SEATED", "CANCELED", "NO_SHOW"],
+  CONFIRMED: ["SEATED", "CANCELED", "NO_SHOW"],
+  SEATED: ["NO_SHOW"],
+  CANCELED: [],
+  NO_SHOW: [],
+};
 
 /** Запоминаем телефон гостя, чтобы раздел «Мои бронирования» открывался сразу. */
 async function rememberGuestPhone(phone: string) {
@@ -76,8 +88,8 @@ export async function setReservationPreorderStatusAction(
   }
 
   const now = new Date();
-  await prisma.reservationPreorder.update({
-    where: { id: preorder.id },
+  const changed = await prisma.reservationPreorder.updateMany({
+    where: { id: preorder.id, status: preorder.status },
     data: {
       status: parsedStatus,
       confirmedAt: nextStatus === "CONFIRMED" ? now : undefined,
@@ -86,6 +98,9 @@ export async function setReservationPreorderStatusAction(
       canceledAt: nextStatus === "CANCELED" ? now : undefined,
     },
   });
+  if (changed.count === 0) {
+    return { ok: false, error: "Предзаказ уже обновлён другим сотрудником" };
+  }
   await writeAudit({
     restaurantId: session.restaurantId,
     userId: session.userId,
@@ -145,6 +160,12 @@ export async function createReservationAction(
 
   const now = Date.now();
   const leadMs = RESERVATION_LIMITS.minLeadMinutes * 60 * 1000;
+  if (reservedAt.getTime() <= now) {
+    return {
+      ok: false,
+      error: "Выберите корректные дату и время визита",
+    };
+  }
   if (reservedAt.getTime() < now + leadMs) {
     return {
       ok: false,
@@ -200,28 +221,46 @@ export async function createReservationAction(
   // Код короткий, поэтому даём несколько попыток на случай коллизии.
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = generateReservationCode();
-    const existing = await prisma.reservation.findUnique({ where: { code } });
-    if (existing) continue;
+    try {
+      await prisma.reservation.create({
+        data: {
+          restaurantId: restaurant.id,
+          branchId: branch.id,
+          code,
+          guestName: input.name,
+          guestPhone: input.phone,
+          guestComment: input.comment || null,
+          guestsCount: input.guests,
+          reservedAt,
+          assignedToId: seniorWaiter?.id ?? null,
+        },
+      });
 
-    await prisma.reservation.create({
-      data: {
-        restaurantId: restaurant.id,
-        branchId: branch.id,
-        code,
-        guestName: input.name,
-        guestPhone: input.phone,
-        guestComment: input.comment || null,
-        guestsCount: input.guests,
-        reservedAt,
-        assignedToId: seniorWaiter?.id ?? null,
-      },
-    });
+      await rememberGuestPhone(input.phone);
+      revalidatePath("/");
+      revalidatePath("/my-reservations");
+      revalidatePath("/staff/reservations");
+      return { ok: true, code };
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError)) throw error;
+      if (error.code !== "P2002") throw error;
 
-    await rememberGuestPhone(input.phone);
-    revalidatePath("/");
-    revalidatePath("/my-reservations");
-    revalidatePath("/staff/reservations");
-    return { ok: true, code };
+      // A concurrent request can win either the code or the slot constraint.
+      const concurrentDuplicate = await prisma.reservation.findFirst({
+        where: {
+          branchId: branch.id,
+          guestPhone: input.phone,
+          reservedAt,
+          status: { in: ["PENDING", "CONFIRMED"] },
+        },
+        select: { code: true },
+      });
+      if (concurrentDuplicate) {
+        await rememberGuestPhone(input.phone);
+        return { ok: true, code: concurrentDuplicate.code };
+      }
+      // The generated code collided; try another cryptographically random code.
+    }
   }
 
   return { ok: false, error: "Не удалось создать бронь. Попробуйте ещё раз." };
@@ -254,7 +293,7 @@ export async function cancelMyReservationAction(
   code: string,
 ): Promise<{ ok: boolean; error?: string }> {
   const store = await cookies();
-  const phone = store.get(GUEST_PHONE_COOKIE)?.value;
+  const phone = normalizeRussianPhone(store.get(GUEST_PHONE_COOKIE)?.value ?? "");
   if (!phone) return { ok: false, error: "Сначала укажите телефон" };
 
   const restaurant = await getRestaurant();
@@ -272,18 +311,29 @@ export async function cancelMyReservationAction(
     return { ok: false, error: "Эту бронь уже нельзя отменить" };
   }
 
-  await prisma.reservation.update({
-    where: { id: reservation.id },
-    data: { status: "CANCELED", canceledAt: new Date() },
-  });
+  const now = new Date();
+  const changed = await prisma.$transaction(async (tx) => {
+    const reservationChanged = await tx.reservation.updateMany({
+      where: {
+        id: reservation.id,
+        status: { in: ["PENDING", "CONFIRMED"] },
+      },
+      data: { status: "CANCELED", canceledAt: now },
+    });
+    if (reservationChanged.count === 0) return false;
 
-  await prisma.reservationPreorder.updateMany({
-    where: {
-      reservationId: reservation.id,
-      status: { in: ["NEW", "CONFIRMED"] },
-    },
-    data: { status: "CANCELED", canceledAt: new Date() },
+    await tx.reservationPreorder.updateMany({
+      where: {
+        reservationId: reservation.id,
+        status: { not: "CANCELED" },
+      },
+      data: { status: "CANCELED", canceledAt: now },
+    });
+    return true;
   });
+  if (!changed) {
+    return { ok: true };
+  }
 
   revalidatePath("/my-reservations");
   revalidatePath("/staff/reservations");
@@ -323,6 +373,10 @@ export async function setReservationStatusAction(
   });
   if (!reservation) return { ok: false, error: "Бронь не найдена" };
 
+  if (!RESERVATION_TRANSITIONS[reservation.status].includes(status)) {
+    return { ok: false, error: "Недопустимая смена статуса брони" };
+  }
+
   if (
     session.role === "SENIOR_WAITER" &&
     reservation.branchId !== actor.branchId
@@ -331,29 +385,35 @@ export async function setReservationStatusAction(
   }
 
   const now = new Date();
-  await prisma.reservation.update({
-    where: { id: reservation.id },
-    data: {
-      status,
-      confirmedAt:
-        status === "CONFIRMED" ? now : status === "PENDING" ? null : undefined,
-      canceledAt:
-        status === "CANCELED" || status === "NO_SHOW" ? now : undefined,
-      // Если бронь была ни за кем, её забирает тот, кто первым взял в работу.
-      assignedToId:
-        reservation.assignedToId ??
-        (session.role === "SENIOR_WAITER" ? session.userId : null),
-    },
-  });
-
-  if (status === "CANCELED" || status === "NO_SHOW") {
-    await prisma.reservationPreorder.updateMany({
-      where: {
-        reservationId: reservation.id,
-        status: { in: ["NEW", "CONFIRMED"] },
+  const changed = await prisma.$transaction(async (tx) => {
+    const reservationChanged = await tx.reservation.updateMany({
+      where: { id: reservation.id, status: reservation.status },
+      data: {
+        status,
+        confirmedAt:
+          status === "CONFIRMED" ? now : status === "PENDING" ? null : undefined,
+        canceledAt:
+          status === "CANCELED" || status === "NO_SHOW" ? now : undefined,
+        assignedToId:
+          reservation.assignedToId ??
+          (session.role === "SENIOR_WAITER" ? session.userId : null),
       },
-      data: { status: "CANCELED", canceledAt: now },
     });
+    if (reservationChanged.count === 0) return false;
+
+    if (status === "CANCELED" || status === "NO_SHOW") {
+      await tx.reservationPreorder.updateMany({
+        where: {
+          reservationId: reservation.id,
+          status: { not: "CANCELED" },
+        },
+        data: { status: "CANCELED", canceledAt: now },
+      });
+    }
+    return true;
+  });
+  if (!changed) {
+    return { ok: false, error: "Бронь уже обновлена другим сотрудником" };
   }
 
   await writeAudit({

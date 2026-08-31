@@ -3,22 +3,33 @@ import { OrderStatusLive } from "@/components/guest/OrderStatusLive";
 import { prisma } from "@/lib/db";
 import { formatMoney, formatTime } from "@/lib/format";
 import { getRestaurant } from "@/lib/restaurant";
+import { cookies } from "next/headers";
+import { GUEST_COOKIE } from "@/lib/session-token";
 
 export const dynamic = "force-dynamic";
 
 export default async function GuestOrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ orderId: string }>;
+  searchParams: Promise<{ tableToken?: string }>;
 }) {
   const { orderId } = await params;
+  const { tableToken } = await searchParams;
   const restaurant = await getRestaurant();
+  const guestSessionId = (await cookies()).get(GUEST_COOKIE)?.value;
   const order = await prisma.order.findUnique({
-    where: { id: orderId },
+    where: { id: orderId, guestSessionId: guestSessionId ?? "" },
     include: { items: true, table: true },
   });
 
-  if (!order || order.restaurantId !== restaurant.id) {
+  if (
+    !order ||
+    order.restaurantId !== restaurant.id ||
+    !tableToken ||
+    order.table.token !== tableToken
+  ) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ink-900 px-6 text-center">
         <h1 className="font-display text-3xl text-white">Заказ не найден</h1>
@@ -60,7 +71,11 @@ export default async function GuestOrderPage({
             </div>
           </div>
 
-          <OrderStatusLive orderId={order.id} initialStatus={order.status} />
+          <OrderStatusLive
+            orderId={order.id}
+            tableToken={tableToken}
+            initialStatus={order.status}
+          />
 
           <div className="mt-5 border-t border-cream-200 pt-4">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-ink-400">

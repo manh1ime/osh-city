@@ -16,6 +16,7 @@ export async function GET(
     const restaurant = await getRestaurant();
     const table = await prisma.table.findUnique({
       where: { token: tableToken },
+      include: { branch: true },
     });
     if (!table || table.restaurantId !== restaurant.id || !table.isActive) {
       return NextResponse.json(
@@ -34,7 +35,12 @@ export async function GET(
         currency: restaurant.currency,
         isOrderingEnabled: restaurant.isOrderingEnabled,
       },
-      table: { number: table.number, zone: table.zone },
+      table: {
+        number: table.number,
+        zone: table.zone,
+        branchName: table.branch?.name ?? "Филиал не задан",
+        branchAddress: table.branch?.address ?? null,
+      },
       categories: categories.map((category) => ({
         id: category.id,
         name: category.name,

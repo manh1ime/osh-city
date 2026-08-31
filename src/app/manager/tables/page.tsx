@@ -6,10 +6,15 @@ export const dynamic = "force-dynamic";
 
 export default async function ManagerTablesPage() {
   const session = await requireManager("tables");
-  const tables = await prisma.table.findMany({
+  const [tables, branches] = await Promise.all([prisma.table.findMany({
     where: { restaurantId: session.restaurantId },
-    orderBy: { number: "asc" },
-  });
+    include: { branch: { select: { id: true, name: true, address: true } } },
+    orderBy: [{ branch: { sortOrder: "asc" } }, { number: "asc" }],
+  }), prisma.branch.findMany({
+    where: { restaurantId: session.restaurantId, isActive: true },
+    select: { id: true, name: true, address: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  })]);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   return (
@@ -21,7 +26,11 @@ export default async function ManagerTablesPage() {
         zone: table.zone,
         token: table.token,
         isActive: table.isActive,
+        branchId: table.branchId,
+        branchName: table.branch?.name ?? "Филиал не задан",
+        branchAddress: table.branch?.address ?? null,
       }))}
+      branches={branches}
     />
   );
 }

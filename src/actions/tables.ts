@@ -27,6 +27,11 @@ export async function saveTableAction(
   if (!parsed.success) return { ok: false, error: firstZodError(parsed.error) };
   const input = parsed.data;
   const settings = await getSecuritySettings(session.restaurantId);
+  const branch = await prisma.branch.findFirst({
+    where: { id: input.branchId, restaurantId: session.restaurantId, isActive: true },
+    select: { id: true },
+  });
+  if (!branch) return { ok: false, error: "Филиал не найден" };
 
   if (input.id) {
     const existing = await prisma.table.findUnique({ where: { id: input.id } });
@@ -37,6 +42,7 @@ export async function saveTableAction(
       where: { id: input.id },
       data: {
         number: input.number,
+        branchId: input.branchId,
         zone: input.zone || null,
         isActive: input.isActive,
       },
@@ -58,7 +64,7 @@ export async function saveTableAction(
   }
 
   const duplicate = await prisma.table.findFirst({
-    where: { restaurantId: session.restaurantId, number: input.number },
+    where: { restaurantId: session.restaurantId, branchId: input.branchId, number: input.number },
   });
   if (duplicate)
     return { ok: false, error: `Стол № ${input.number} уже существует` };
@@ -66,6 +72,7 @@ export async function saveTableAction(
   const created = await prisma.table.create({
     data: {
       restaurantId: session.restaurantId,
+      branchId: input.branchId,
       number: input.number,
       zone: input.zone || null,
       isActive: input.isActive,

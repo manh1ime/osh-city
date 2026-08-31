@@ -18,6 +18,7 @@ export type StaffOrderDto = {
   createdAt: string;
   tableNumber: number;
   tableZone: string | null;
+  branchName: string;
   acceptedByName: string | null;
   items: Array<{
     id: string;
@@ -66,6 +67,10 @@ function timerLabel(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const rest = seconds % 60;
   return `${minutes}:${String(rest).padStart(2, "0")}`;
+}
+
+function stableTimerLabel(seconds: number, ready: boolean) {
+  return ready ? timerLabel(seconds) : "--:--";
 }
 
 /**
@@ -303,7 +308,7 @@ export function OrdersBoard({
                     </p>
                   </div>
                   <span className="rounded-md bg-amber-50 px-3 py-1 text-xs font-semibold text-gold-400">
-                    {timerLabel(seconds)}
+                    {stableTimerLabel(seconds, now !== 0)}
                   </span>
                 </div>
                 {call.message ? (
@@ -380,7 +385,7 @@ export function OrdersBoard({
                         № {order.orderNumber} · Стол {order.tableNumber}
                       </p>
                       <p className="text-xs text-ink-400">
-                        {order.tableZone ?? "-"} · {timerLabel(seconds)} назад
+                        {order.branchName} · {order.tableZone ?? "-"} · {stableTimerLabel(seconds, now !== 0)} назад
                       </p>
                     </div>
                     <span className="rounded-md bg-cream-100 px-3 py-1 text-[11px] font-semibold text-cream-200">

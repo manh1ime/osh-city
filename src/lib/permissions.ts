@@ -10,6 +10,7 @@ export const managerSectionRoles = {
   tables: ["MANAGER"],
   staff: ["MANAGER"],
   settings: ["MANAGER"],
+  reservations: ["MANAGER"],
 } satisfies Record<string, SessionRole[]>;
 
 export type ManagerSection = keyof typeof managerSectionRoles;
@@ -33,6 +34,7 @@ export function sectionFromPathname(pathname: string): ManagerSection {
   if (pathname.startsWith("/manager/tables")) return "tables";
   if (pathname.startsWith("/manager/staff")) return "staff";
   if (pathname.startsWith("/manager/settings")) return "settings";
+  if (pathname.startsWith("/manager/reservations")) return "reservations";
   return "dashboard";
 }
 

@@ -17,6 +17,10 @@ export default async function StaffOrderDetailPage({
   const { orderId } = await params;
   const session = await requireStaff();
   const restaurant = await getRestaurant();
+  const staff = await prisma.staffUser.findUnique({
+    where: { id: session.userId },
+    select: { branchId: true },
+  });
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
@@ -25,7 +29,14 @@ export default async function StaffOrderDetailPage({
     },
   });
 
-  if (!order || order.restaurantId !== session.restaurantId) notFound();
+  if (
+    !order ||
+    order.restaurantId !== session.restaurantId ||
+    (session.role !== "MANAGER" &&
+      (!staff?.branchId || order.table.branchId !== staff.branchId))
+  ) {
+    notFound();
+  }
 
   return (
     <div>

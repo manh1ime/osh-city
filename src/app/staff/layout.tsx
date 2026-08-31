@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { logoutAction } from "@/actions/auth";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -12,6 +13,8 @@ export default async function StaffLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = (await headers()).get("x-uchkuduk-pathname");
+  if (pathname === "/staff/login") return <>{children}</>;
   const session = await getSession("staff");
 
   // Страница /staff/login тоже использует этот layout.
@@ -22,15 +25,15 @@ export default async function StaffLayout({
     getRestaurant(),
     prisma.staffUser.findUnique({
       where: { id: session.userId },
-      select: { isNightShift: true },
+      select: { isNightShift: true, branch: { select: { name: true } } },
     }),
   ]);
 
   return (
     <div className="staff-theme eastern-night-staff-panel min-h-screen bg-[#151817] text-ink-900">
       <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div className="flex min-w-0 max-w-full items-center gap-3">
             {true ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -39,12 +42,12 @@ export default async function StaffLayout({
                 className="h-11 w-11 shrink-0 rounded-lg object-contain"
               />
             ) : null}
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-base font-semibold tracking-tight">
                 {restaurant.name}
               </p>
-              <p className="text-xs text-ink-400">
-              {session.name} · {roleLabel[session.role]} ·{" "}
+              <p className="truncate text-xs text-ink-400">
+              {session.name} · {roleLabel[session.role]} · {currentStaff?.branch?.name ?? "Все филиалы"} ·{" "}
               {currentStaff?.isNightShift ? "Ночная смена" : "Дневная смена"}
               </p>
             </div>
@@ -62,14 +65,12 @@ export default async function StaffLayout({
             >
               Вызовы
             </Link>
-            {session.role === "SENIOR_WAITER" || session.role === "MANAGER" ? (
-              <Link
-                href="/staff/reservations"
-                className="rounded-lg px-3 py-2 text-ink-600 hover:bg-cream-100"
-              >
-                Бронирования
-              </Link>
-            ) : null}
+            <Link
+              href="/staff/reservations"
+              className="rounded-lg px-3 py-2 text-ink-600 hover:bg-cream-100"
+            >
+              Бронирования
+            </Link>
             <Link
               href="/staff/summary"
               className="rounded-lg px-3 py-2 text-ink-600 hover:bg-cream-100"

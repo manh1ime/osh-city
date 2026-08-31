@@ -24,8 +24,16 @@ export const RESERVATION_CODE_ALPHABET = "ACDEFGHJKLMNPQRTUVWXY3479";
 export const RESERVATION_CODE_LENGTH = 6;
 
 function toMinutes(time: string): number {
+  if (!/^\d{2}:\d{2}$/.test(time)) return -1;
   const [hours, minutes] = time.split(":").map((part) => Number(part));
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) return 0;
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours > 23 ||
+    minutes > 59
+  ) {
+    return -1;
+  }
   return hours * 60 + minutes;
 }
 
@@ -42,6 +50,7 @@ function toTimeString(minutes: number): string {
 export function buildTimeSlots(openTime: string, closeTime: string): string[] {
   const start = toMinutes(openTime);
   const rawEnd = toMinutes(closeTime);
+  if (start < 0 || rawEnd < 0) return [];
   const end = (rawEnd <= start ? rawEnd + 24 * 60 : rawEnd) - 60;
   const slots: string[] = [];
   for (
@@ -79,26 +88,42 @@ export function isTimeWithinWorkingHours(
   openTime: string,
   closeTime: string,
 ): boolean {
-  if (isRoundTheClock(openTime, closeTime)) return /^\d{2}:\d{2}$/.test(time);
-
   const value = toMinutes(time);
   const start = toMinutes(openTime);
   const rawEnd = toMinutes(closeTime);
+  if (value < 0 || start < 0 || rawEnd < 0) return false;
+  if (isRoundTheClock(openTime, closeTime)) return true;
+
+  const lastSlot = (rawEnd <= start ? rawEnd + 24 * 60 : rawEnd) - 60;
+  if (lastSlot < start) return false;
   // Закрытие после полуночи: интервал переходит через сутки.
-  if (rawEnd <= start) return value >= start || value <= rawEnd;
-  return value >= start && value <= rawEnd;
+  if (rawEnd <= start) return value >= start || value <= rawEnd - 60;
+  return value >= start && value <= lastSlot;
 }
 
 /** Дата и время из формы -> Date. Значения приходят строками "2026-09-01" и "19:30". */
 export function combineDateAndTime(date: string, time: string): Date | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
-  if (!/^\d{2}:\d{2}$/.test(time)) return null;
+  if (toMinutes(time) < 0) return null;
   const parsed = new Date(`${date}T${time}:00`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  if (Number.isNaN(parsed.getTime())) return null;
+  // JS normalizes invalid calendar dates (for example 2026-02-31), reject them.
+  const [year, month, day] = date.split("-").map(Number);
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() + 1 !== month ||
+    parsed.getDate() !== day ||
+    parsed.getHours() !== Number(time.slice(0, 2)) ||
+    parsed.getMinutes() !== Number(time.slice(3, 5))
+  ) {
+    return null;
+  }
+  return parsed;
 }
 
 export function formatReservationDate(value: Date): string {
   return new Intl.DateTimeFormat("ru-RU", {
+    timeZone: "Europe/Moscow",
     day: "numeric",
     month: "long",
     weekday: "short",
@@ -107,6 +132,7 @@ export function formatReservationDate(value: Date): string {
 
 export function formatReservationTime(value: Date): string {
   return new Intl.DateTimeFormat("ru-RU", {
+    timeZone: "Europe/Moscow",
     hour: "2-digit",
     minute: "2-digit",
   }).format(value);

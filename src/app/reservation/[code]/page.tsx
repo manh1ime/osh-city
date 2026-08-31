@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getRestaurant } from "@/lib/restaurant";
 import { ReservationCancelButton } from "@/components/guest/ReservationCancelButton";
+import { cookies } from "next/headers";
+import { GUEST_PHONE_COOKIE } from "@/lib/session-token";
+import { normalizeRussianPhone } from "@/lib/validation";
+import { preorderStatusLabel, reservationStatusLabel } from "@/lib/format";
 import {
   formatReservationDate,
   formatReservationTime,
@@ -10,14 +14,6 @@ import {
 } from "@/lib/reservations";
 
 export const dynamic = "force-dynamic";
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: "Ожидает подтверждения",
-  CONFIRMED: "Подтверждена",
-  SEATED: "Гости за столом",
-  CANCELED: "Отменена",
-  NO_SHOW: "Гости не пришли",
-};
 
 /** Страница брони по короткому коду. Открывается без авторизации. */
 export default async function ReservationPage({
@@ -27,9 +23,16 @@ export default async function ReservationPage({
 }) {
   const { code } = await params;
   const restaurant = await getRestaurant();
+  const guestPhone = normalizeRussianPhone(
+    (await cookies()).get(GUEST_PHONE_COOKIE)?.value ?? "",
+  );
 
   const reservation = await prisma.reservation.findFirst({
-    where: { code: code.toUpperCase(), restaurantId: restaurant.id },
+    where: {
+      code: code.toUpperCase(),
+      restaurantId: restaurant.id,
+      guestPhone: guestPhone ?? "",
+    },
     include: {
       branch: true,
       preorders: {
@@ -56,7 +59,7 @@ export default async function ReservationPage({
 
         <div className="guest-menu-card mt-4 rounded-2xl p-6 sm:p-8">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">
-            {STATUS_LABEL[reservation.status] ?? reservation.status}
+            {reservationStatusLabel[reservation.status] ?? reservation.status}
           </p>
           <h1 className="guest-display mt-2 text-2xl font-semibold text-white">
             Бронь стола
@@ -121,7 +124,7 @@ export default async function ReservationPage({
           ) : null}
 
           {reservation.preorders.length > 0 ? (
-            <section className="mt-6 border-t border-white/10 pt-5">
+            <section id="preorders" className="mt-6 border-t border-white/10 pt-5">
               <h2 className="guest-display text-lg font-semibold text-white">
                 Предзаказы
               </h2>
@@ -135,7 +138,9 @@ export default async function ReservationPage({
                       <span className="font-medium text-white">
                         № {preorder.preorderNumber}
                       </span>
-                      <span className="text-[#E0B472]">{preorder.status}</span>
+                       <span className="text-[#E0B472]">
+                         {preorderStatusLabel[preorder.status] ?? preorder.status}
+                       </span>
                     </div>
                     <p className="mt-1 text-xs text-white/50">
                       {preorder.timing === "SERVE_ON_ARRIVAL"

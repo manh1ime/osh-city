@@ -15,14 +15,21 @@ export type TableRow = {
   zone: string | null;
   token: string;
   isActive: boolean;
+  branchId: string | null;
+  branchName: string;
+  branchAddress: string | null;
 };
+
+export type TableBranchOption = { id: string; name: string; address: string };
 
 export function TableManager({
   tables,
   baseUrl,
+  branches,
 }: {
   tables: TableRow[];
   baseUrl: string;
+  branches: TableBranchOption[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -107,6 +114,12 @@ export function TableManager({
                 <p className="text-xs text-ink-400">
                   {table.zone ?? "Без зоны"}
                 </p>
+                <p className="mt-1 text-xs font-medium text-wine-600">
+                  {table.branchName}
+                </p>
+                {table.branchAddress ? (
+                  <p className="text-xs text-ink-400">{table.branchAddress}</p>
+                ) : null}
               </div>
               <span
                 className={`badge ${
@@ -187,6 +200,12 @@ export function TableManager({
           {editing ? (
             <input type="hidden" name="id" value={editing.id} />
           ) : null}
+          <div>
+            <label className="label" htmlFor="table-branch">Филиал</label>
+            <select id="table-branch" name="branchId" className="input" defaultValue={editing?.branchId ?? branches[0]?.id ?? ""} required>
+              {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
+            </select>
+          </div>
           <div>
             <label className="label" htmlFor="table-number">
               Номер стола

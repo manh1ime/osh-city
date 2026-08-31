@@ -17,9 +17,11 @@ const STEPS: Status[] = ["NEW", "ACCEPTED", "SENT_TO_KITCHEN", "COMPLETED"];
 /** Статус заказа обновляется поллингом каждые 5 секунд. */
 export function OrderStatusLive({
   orderId,
+  tableToken,
   initialStatus,
 }: {
   orderId: string;
+  tableToken: string;
   initialStatus: Status;
 }) {
   const [status, setStatus] = useState<Status>(initialStatus);
@@ -29,9 +31,12 @@ export function OrderStatusLive({
     let active = true;
     const timer = setInterval(async () => {
       try {
-        const response = await fetch(`/api/guest/order/${orderId}`, {
+        const response = await fetch(
+          `/api/guest/order/${orderId}?tableToken=${encodeURIComponent(tableToken)}`,
+          {
           cache: "no-store",
-        });
+          },
+        );
         const payload = (await response.json()) as {
           ok: boolean;
           status?: Status;
@@ -45,7 +50,7 @@ export function OrderStatusLive({
       active = false;
       clearInterval(timer);
     };
-  }, [orderId, status]);
+  }, [orderId, tableToken, status]);
 
   const canceled = status === "CANCELED";
   const currentIndex = STEPS.indexOf(status);

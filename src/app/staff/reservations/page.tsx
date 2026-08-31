@@ -18,23 +18,23 @@ export const dynamic = "force-dynamic";
  * менеджер видит оба филиала.
  */
 export default async function StaffReservationsPage() {
-  const session = await requireRole(["SENIOR_WAITER", "MANAGER"]);
+  const session = await requireRole(["WAITER", "SENIOR_WAITER", "MANAGER"]);
 
   const actor = await prisma.staffUser.findUnique({
     where: { id: session.userId },
     select: { branchId: true, branch: { select: { name: true } } },
   });
 
-  const isSenior = session.role === "SENIOR_WAITER";
+  const isBranchStaff = session.role !== "MANAGER";
 
   // Старший без филиала не должен видеть чужие брони.
   const rows =
-    isSenior && !actor?.branchId
+    isBranchStaff && !actor?.branchId
       ? []
       : await prisma.reservation.findMany({
           where: {
             restaurantId: session.restaurantId,
-            ...(isSenior && actor?.branchId
+            ...(isBranchStaff && actor?.branchId
               ? { branchId: actor.branchId }
               : {}),
             reservedAt: {
@@ -92,7 +92,7 @@ export default async function StaffReservationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
-            {isSenior
+            {isBranchStaff
               ? (actor?.branch?.name ?? "Филиал не задан")
               : "Все филиалы"}
           </p>
@@ -111,7 +111,7 @@ export default async function StaffReservationsPage() {
         </Link>
       </div>
 
-      {isSenior && !actor?.branchId ? (
+      {isBranchStaff && !actor?.branchId ? (
         <p className="mt-6 rounded-lg border border-[#B7833E]/30 bg-[#B7833E]/10 px-4 py-3 text-sm text-[#E0B472]">
           Вам не назначен филиал. Попросите менеджера указать его в карточке
           сотрудника.
@@ -119,7 +119,11 @@ export default async function StaffReservationsPage() {
       ) : null}
 
       <div className="mt-6">
-        <ReservationsBoard reservations={reservations} showBranch={!isSenior} />
+          <ReservationsBoard
+            reservations={reservations}
+            showBranch={!isBranchStaff}
+            canManage={session.role !== "WAITER"}
+          />
       </div>
     </div>
   );

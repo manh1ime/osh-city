@@ -7,6 +7,7 @@ import {
   guestsLabel,
 } from "@/lib/reservations";
 import { GUEST_PHONE_COOKIE } from "@/lib/session-token";
+import { normalizeRussianPhone } from "@/lib/validation";
 import {
   MyReservations,
   type GuestReservationDto,
@@ -20,7 +21,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function MyReservationsPage() {
   const store = await cookies();
-  const phone = store.get(GUEST_PHONE_COOKIE)?.value ?? null;
+  const storedPhone = store.get(GUEST_PHONE_COOKIE)?.value ?? "";
+  const phone = storedPhone ? normalizeRussianPhone(storedPhone) : null;
   const restaurant = await getRestaurant();
 
   const rows = phone
@@ -29,6 +31,15 @@ export default async function MyReservationsPage() {
         include: {
           branch: { select: { name: true, address: true } },
           assignedTo: { select: { name: true } },
+          preorders: {
+            select: {
+              id: true,
+              preorderNumber: true,
+              status: true,
+              timing: true,
+            },
+            orderBy: { createdAt: "desc" },
+          },
         },
         orderBy: { reservedAt: "desc" },
       })
@@ -46,6 +57,7 @@ export default async function MyReservationsPage() {
     guestsLabel: guestsLabel(row.guestsCount),
     comment: row.guestComment,
     hostName: row.assignedTo?.name ?? null,
+    preorders: row.preorders,
     isPast:
       row.reservedAt.getTime() < now ||
       row.status === "CANCELED" ||

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { ManagerShell } from "@/components/manager/ManagerShell";
 import { getSession } from "@/lib/auth";
 import { getRestaurant } from "@/lib/restaurant";
@@ -11,6 +12,8 @@ export default async function ManagerLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = (await headers()).get("x-uchkuduk-pathname");
+  if (pathname === "/manager/login") return <>{children}</>;
   const session = await getSession("manager");
 
   // Экран входа должен быть доступен без оболочки менеджера.

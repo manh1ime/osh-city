@@ -16,6 +16,7 @@ export function toStaffOrderDto(order: StaffOrder): StaffOrderDto {
     createdAt: order.createdAt.toISOString(),
     tableNumber: order.table.number,
     tableZone: order.table.zone,
+    branchName: order.table.branch?.name ?? "Филиал не задан",
     acceptedByName: order.acceptedBy?.name ?? null,
     items: order.items.map((item) => ({
       id: item.id,

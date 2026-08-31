@@ -14,9 +14,21 @@ export async function updateWaiterCallAction(
   nextStatus: WaiterCallStatus,
 ): Promise<ActionResult> {
   const user = await requireStaff();
-  const call = await prisma.waiterCall.findUnique({ where: { id: callId } });
+  const call = await prisma.waiterCall.findUnique({
+    where: { id: callId },
+    include: { table: { select: { branchId: true } } },
+  });
   if (!call || call.restaurantId !== user.restaurantId) {
     return { ok: false, error: "Вызов не найден" };
+  }
+  if (user.role !== "MANAGER") {
+    const staff = await prisma.staffUser.findUnique({
+      where: { id: user.userId },
+      select: { branchId: true },
+    });
+    if (!staff?.branchId || call.table.branchId !== staff.branchId) {
+      return { ok: false, error: "Этот вызов другого филиала" };
+    }
   }
   if (call.status === "CLOSED") {
     return { ok: false, error: "Вызов уже закрыт" };

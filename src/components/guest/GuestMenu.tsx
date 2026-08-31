@@ -63,7 +63,12 @@ export function GuestMenu({
     currency: string;
     isOrderingEnabled: boolean;
   };
-  table?: { number: number; zone: string | null };
+  table?: {
+    number: number;
+    zone: string | null;
+    branchName: string;
+    branchAddress: string | null;
+  };
   tableToken?: string;
   reservation?: { code: string; dateLabel: string; timeLabel: string };
   categories: GuestCategoryDto[];
@@ -123,15 +128,17 @@ export function GuestMenu({
   }, [cart, storageKey]);
 
   const filteredCategories = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = search.trim().toLocaleLowerCase("ru-RU");
     if (!query) return categories;
     return categories
       .map((category) => ({
         ...category,
         items: category.items.filter(
           (item) =>
-            item.name.toLowerCase().includes(query) ||
-            (item.description ?? "").toLowerCase().includes(query),
+            item.name.toLocaleLowerCase("ru-RU").includes(query) ||
+            (item.description ?? "").toLocaleLowerCase("ru-RU").includes(query) ||
+            (item.ingredients ?? "").toLocaleLowerCase("ru-RU").includes(query) ||
+            category.name.toLocaleLowerCase("ru-RU").includes(query),
         ),
       }))
       .filter((category) => category.items.length > 0);
@@ -279,7 +286,7 @@ export function GuestMenu({
       router.push(
         isReservationMenu
           ? `/reservation/${reservation?.code}`
-          : `/order/${payload.orderId}`,
+          : `/order/${payload.orderId}?tableToken=${encodeURIComponent(tableToken ?? "")}`,
       );
     } catch {
       setError("Нет связи с сервером. Попробуйте еще раз.");
@@ -339,8 +346,8 @@ export function GuestMenu({
                 </>
               ) : (
                 <>
-                  Стол {table?.number}
-                  {table?.zone ? ` · ${table.zone}` : ""}
+                   {table?.branchName} · стол {table?.number}
+                   {table?.zone ? ` · ${table.zone}` : ""}
                 </>
               )}
               </p>

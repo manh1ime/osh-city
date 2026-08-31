@@ -9,7 +9,11 @@ import {
 /** Защита панелей персонала и менеджера, плюс анонимная гостевая сессия. */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-uchkuduk-pathname", pathname);
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   if (pathname.startsWith("/menu") || pathname.startsWith("/order")) {
     if (!request.cookies.get(GUEST_COOKIE)?.value) {
@@ -56,7 +60,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Edge middleware отключён: страницы и действия уже проверяют сессии на сервере.
-  // Это устраняет несовместимость Edge runtime на Vercel.
-  matcher: ["/__uchkuduk_middleware_disabled__"],
+  matcher: ["/staff/:path*", "/manager/:path*", "/menu/:path*", "/order/:path*"],
 };

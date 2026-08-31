@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { setReservationStatusAction } from "@/actions/reservations";
 import { setReservationPreorderStatusAction } from "@/actions/reservations";
+import { preorderStatusLabel } from "@/lib/format";
 
 export type StaffReservationDto = {
   id: string;
@@ -55,13 +56,21 @@ const STATUS_BADGE: Record<StaffReservationDto["status"], string> = {
 export function ReservationsBoard({
   reservations,
   showBranch,
+  canManage = true,
 }: {
   reservations: StaffReservationDto[];
   showBranch: boolean;
+  canManage?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Гостевая отмена должна появляться у персонала без ручной перезагрузки.
+  useEffect(() => {
+    const timer = window.setInterval(() => router.refresh(), 5000);
+    return () => window.clearInterval(timer);
+  }, [router]);
 
   function setStatus(id: string, status: StaffReservationDto["status"]) {
     setError(null);
@@ -172,7 +181,7 @@ export function ReservationsBoard({
                   </p>
                 </div>
                 <strong className="text-sm text-white">
-                  {preorder.status}
+                  {preorderStatusLabel[preorder.status]}
                 </strong>
               </div>
               <ul className="mt-3 space-y-1 text-sm text-white/80">
@@ -183,7 +192,7 @@ export function ReservationsBoard({
                   </li>
                 ))}
               </ul>
-              <div className="mt-3 flex flex-wrap gap-2">
+              {canManage ? <div className="mt-3 flex flex-wrap gap-2">
                 {preorder.status === "NEW" ? (
                   <button
                     disabled={isPending}
@@ -221,11 +230,11 @@ export function ReservationsBoard({
                     Отменить
                   </button>
                 ) : null}
-              </div>
+              </div> : null}
             </section>
           ))}
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          {canManage ? <div className="mt-4 flex flex-wrap gap-2">
             {item.status !== "CONFIRMED" && item.status !== "SEATED" ? (
               <button
                 type="button"
@@ -266,7 +275,7 @@ export function ReservationsBoard({
                 Отменить
               </button>
             ) : null}
-          </div>
+          </div> : null}
         </article>
       ))}
     </div>

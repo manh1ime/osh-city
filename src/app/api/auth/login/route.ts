@@ -69,6 +69,9 @@ export async function POST(request: NextRequest) {
         maxAge: SESSION_TTL_SECONDS,
       },
     );
+    response.cookies.delete(
+      area === "manager" ? STAFF_SESSION_COOKIE : MANAGER_SESSION_COOKIE,
+    );
     return response;
   } catch (error) {
     console.error(`LOGIN_ROUTE_ERROR stage=${stage}`, error);

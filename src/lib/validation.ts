@@ -8,6 +8,47 @@ export const ORDER_LIMITS = {
   maxPositions: 50,
 } as const;
 
+/**
+ * Российский телефон: принимаем визуальные пробелы, скобки и дефисы,
+ * но храним только нормализованный вид "+79990009900".
+ * Требования: +7 и ровно 10 цифр после него.
+ */
+export const RUSSIAN_PHONE_REGEX = /^\+7\d{10}$/;
+
+/** Убирает всё, кроме цифр, и нормализует в формат "+7XXXXXXXXXX". */
+export function normalizeRussianPhone(value: string): string {
+  const digits = value.replace(/[^\d]/g, "");
+  if (digits.length === 11 && digits.startsWith("7")) {
+    return `+${digits}`;
+  }
+  return digits ? `+${digits}` : "";
+}
+
+/** Один и тот же телефон в любом вводе сравнивается одинаково. */
+export function samePhone(a: string, b: string): boolean {
+  return normalizeRussianPhone(a) === normalizeRussianPhone(b);
+}
+
+export function isValidRussianPhone(value: string): boolean {
+  return RUSSIAN_PHONE_REGEX.test(normalizeRussianPhone(value));
+}
+
+/** Валидатор телефона для zod: нормализует перед сохранением. */
+const russianPhone = z
+  .string()
+  .max(30)
+  .refine(
+    (value) => /^\+7[\d\s()\-]{10,24}$/.test(value),
+    "Укажите российский номер в формате +7 900 000-00-00",
+  )
+  .transform((value) => {
+    // Разрешаем только визуальные разделители, но на сервере храним чистый вид.
+    return normalizeRussianPhone(value.replace(/[\s()\-]/g, ""));
+  })
+  .refine((value) => RUSSIAN_PHONE_REGEX.test(value), {
+    message: "Укажите российский номер в формате +7 900 000-00-00",
+  });
+
 /** Защита от XSS/инъекций: сохраняем только плоский текст без тегов. */
 export function sanitizeText(value: string): string {
   return value
@@ -128,6 +169,7 @@ export const categorySchema = z.object({
 
 export const tableSchema = z.object({
   id: cuidLike.optional(),
+  branchId: cuidLike,
   number: z.coerce.number().int().min(1).max(9999),
   zone: plainText(60).optional().nullable(),
   isActive: z.coerce.boolean().default(true),
@@ -195,14 +237,7 @@ export const reservationSchema = z.object({
     .max(60)
     .regex(/^[a-z0-9-]+$/, "Некорректный филиал"),
   name: plainText(80).refine((value) => value.length > 1, "Укажите имя"),
-  phone: z
-    .string()
-    .max(30)
-    .transform((value) => value.replace(/[^\d+]/g, ""))
-    .refine(
-      (value) => /^\+?\d{10,15}$/.test(value),
-      "Укажите корректный номер телефона",
-    ),
+  phone: russianPhone,
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Выберите дату"),
   time: z.string().regex(/^\d{2}:\d{2}$/, "Выберите время"),
   // За столом 4 посадочных места.
@@ -217,14 +252,7 @@ export type ReservationInput = z.infer<typeof reservationSchema>;
 
 /** Поиск своих броней: гость вводит телефон, по которому бронировал. */
 export const reservationLookupSchema = z.object({
-  phone: z
-    .string()
-    .max(30)
-    .transform((value) => value.replace(/[^\d+]/g, ""))
-    .refine(
-      (value) => /^\+?\d{10,15}$/.test(value),
-      "Укажите корректный номер телефона",
-    ),
+  phone: russianPhone,
 });
 
 /** Смена статуса брони со стороны старшего официанта. */

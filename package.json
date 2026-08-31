@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev --name init",
     "db:studio": "prisma studio",

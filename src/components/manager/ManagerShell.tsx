@@ -9,6 +9,7 @@ type Role = "WAITER" | "MANAGER";
 const NAV: Array<{ href: string; label: string; roles: Role[] }> = [
   { href: "/manager", label: "Сводка", roles: ["MANAGER"] },
   { href: "/manager/orders", label: "Заказы", roles: ["MANAGER"] },
+  { href: "/manager/reservations", label: "Бронирования", roles: ["MANAGER"] },
   { href: "/manager/reports", label: "Отчеты", roles: ["MANAGER"] },
   { href: "/manager/menu", label: "Меню", roles: ["MANAGER"] },
   { href: "/manager/categories", label: "Категории", roles: ["MANAGER"] },
@@ -87,9 +88,9 @@ export function ManagerShell({
           ))}
         </nav>
         <div className="mt-auto border-t border-cream-200 pt-4">
-          <Link href="/staff/orders" className="sidebar-link">
-            Панель персонала
-          </Link>
+          <p className="px-2 text-xs text-ink-400">
+            Панель менеджера
+          </p>
         </div>
       </aside>
 
