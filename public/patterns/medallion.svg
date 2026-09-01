@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-hidden="true">
+  <!-- Крупный медальон: розетка с восьмиконечной звездой -->
+  <g fill="none" stroke="currentColor" stroke-linejoin="round">
+    <circle cx="160" cy="160" r="146" stroke-width="2" />
+    <circle cx="160" cy="160" r="136" stroke-width="1.2" opacity="0.7" />
+    <g stroke-width="2">
+      <path d="M160 22 L184 136 L298 160 L184 184 L160 298 L136 184 L22 160 L136 136 Z" />
+      <path d="M160 44 L176 144 L276 160 L176 176 L160 276 L144 176 L44 160 L144 144 Z" stroke-width="1.4" opacity="0.8" />
+    </g>
+    <g stroke-width="1.4" opacity="0.75">
+      <path d="M160 160 L160 22 M160 160 L160 298 M160 160 L22 160 M160 160 L298 160" />
+      <path d="M160 160 L62 62 M160 160 L258 62 M160 160 L62 258 M160 160 L258 258" />
+    </g>
+    <circle cx="160" cy="160" r="34" stroke-width="2.2" />
+    <circle cx="160" cy="160" r="18" stroke-width="1.4" opacity="0.8" />
+    <circle cx="160" cy="160" r="6" fill="currentColor" stroke="none" />
+    <g stroke-width="1.4" opacity="0.6">
+      <path d="M160 36 v22 M160 262 v22 M36 160 h22 M262 160 h22" />
+      <path d="M92 92 l16 16 M228 92 l-16 16 M92 228 l16 -16 M228 228 l-16 -16" />
+    </g>
+  </g>
+</svg>

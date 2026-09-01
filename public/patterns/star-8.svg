@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-hidden="true">
+  <!-- Восьмиконечная звезда (туй) в сузани-стиле -->
+  <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round">
+    <path d="M64 12 L72 56 L116 64 L72 72 L64 116 L56 72 L12 64 L56 56 Z" />
+    <path d="M64 26 L69 59 L102 64 L69 69 L64 102 L59 69 L26 64 L59 59 Z" stroke-width="2" opacity="0.85" />
+    <circle cx="64" cy="64" r="12" stroke-width="2.5" />
+    <circle cx="64" cy="64" r="4" fill="currentColor" stroke="none" />
+    <g stroke-width="1.5" opacity="0.7">
+      <path d="M64 4 v8 M64 116 v8 M4 64 h8 M116 64 h8" />
+      <path d="M24 24 l5.5 5.5 M98.5 98.5 l5.5 5.5 M104 24 l-5.5 5.5 M29.5 98.5 l-5.5 5.5" />
+    </g>
+  </g>
+</svg>

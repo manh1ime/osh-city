@@ -32,21 +32,6 @@ function toIsoDate(value: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-const HIGHLIGHTS = [
-  {
-    title: "Восточная кухня",
-    text: "Плов, лагман, манты и шашлык на живом угле. Каждый день свежая готовка.",
-  },
-  {
-    title: "Залы на 12 столов",
-    text: "В каждом филиале 12 столов по 4 места. Для большой компании сдвинем столы.",
-  },
-  {
-    title: "Меню в телефоне",
-    text: "QR-код на столе: состав блюд, вес и заказ без ожидания официанта.",
-  },
-];
-
 export function LandingPage({ restaurant, branches }: Props) {
   // Границы календаря считаем один раз: сегодня и потолок бронирования.
   const today = useMemo(() => toIsoDate(new Date()), []);
@@ -119,9 +104,9 @@ export function LandingPage({ restaurant, branches }: Props) {
   }
 
   return (
-    <div className="guest-theme min-h-screen bg-[#121514] pb-16 text-ink-900">
+    <div className="guest-theme uzb-pattern-bg min-h-screen bg-[#121514] pb-16 text-ink-900">
       {/* Шапка */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#121514]/90 backdrop-blur">
+      <header className="uzb-pattern-border sticky top-0 z-30 border-b border-white/10 bg-[#121514]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             {restaurant.logoUrl ? (
@@ -132,27 +117,32 @@ export function LandingPage({ restaurant, branches }: Props) {
                 className="h-10 w-10 shrink-0 rounded-lg object-contain"
               />
             ) : null}
-            <span className="guest-display truncate text-lg font-semibold tracking-[-0.02em] text-white">
+            <span className="guest-display uzb-star truncate text-lg font-semibold tracking-[-0.02em] text-white">
               {restaurant.name}
             </span>
           </div>
-          {activeReservationCode ? (
-            <Link
-              href="/my-reservations"
-              className="btn btn-primary btn-sm"
-            >
-              Мои бронирования
+          <div className="flex items-center gap-2">
+            <Link href="/menu" className="btn btn-sm border border-white/20 text-white hover:bg-white/10">
+              Меню
             </Link>
-          ) : (
-            <a href="#booking" className="btn btn-primary btn-sm">
-              Забронировать
-            </a>
-          )}
+            {activeReservationCode ? (
+              <Link
+                href="/my-reservations"
+                className="btn btn-primary btn-sm"
+              >
+                Мои бронирования
+              </Link>
+            ) : (
+              <a href="#booking" className="btn btn-primary btn-sm">
+                Забронировать
+              </a>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Герой-блок */}
-      <section className="relative isolate overflow-hidden">
+      <section className="uzb-starfield relative isolate overflow-hidden">
         {restaurant.coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -162,7 +152,7 @@ export function LandingPage({ restaurant, branches }: Props) {
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/45" />
-        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="uzb-medallion relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <img
             src="/images/uchkuduk-logo.webp"
             alt="Логотип Учкудук"
@@ -196,74 +186,78 @@ export function LandingPage({ restaurant, branches }: Props) {
         </div>
       </section>
 
-      {/* Коротко о нас */}
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {HIGHLIGHTS.map((item) => (
-            <article
-              key={item.title}
-              className="guest-menu-card rounded-xl p-5"
-            >
-              <h3 className="guest-display text-lg font-semibold text-white">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/60">
-                {item.text}
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* Разделитель с восьмиконечной звездой */}
+      <div className="uzb-divider" aria-hidden="true">
+        <svg viewBox="0 0 640 40" preserveAspectRatio="xMidYMid meet">
+          <g fill="none" stroke="currentColor" strokeLinejoin="round">
+            <path d="M0 20 H270 M370 20 H640" strokeWidth="1.5" />
+            <circle cx="280" cy="20" r="3" fill="currentColor" stroke="none" />
+            <circle cx="360" cy="20" r="3" fill="currentColor" stroke="none" />
+            <path d="M320 6 L328 17 L340 20 L328 23 L320 34 L312 23 L300 20 L312 17 Z" strokeWidth="2" />
+            <path d="M320 12 L324.5 18.5 L331 20 L324.5 21.5 L320 28 L315.5 21.5 L309 20 L315.5 18.5 Z" strokeWidth="1.2" opacity="0.8" />
+            <circle cx="320" cy="20" r="2" fill="currentColor" stroke="none" />
+          </g>
+        </svg>
+      </div>
 
-      {/* Филиалы */}
+      {/* Режим работы */}
       <section id="branches" className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
         <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">
           Филиалы
         </p>
         <h2 className="guest-display mt-2 text-2xl font-semibold text-white">
-          Выберите, куда вам удобнее
+          Работаем круглосуточно
         </h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          {branches.map((item) => {
-            const isActive = item.slug === branchSlug;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setBranchSlug(item.slug)}
-                aria-pressed={isActive}
-                className={`guest-menu-card rounded-xl p-5 text-left transition ${
-                  isActive
-                    ? "ring-2 ring-[#B7833E]"
-                    : "opacity-80 hover:opacity-100"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="guest-display text-lg font-semibold text-white">
-                      {item.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-white/70">{item.address}</p>
-                  </div>
-                  <span
-                    className={`mt-1 h-4 w-4 shrink-0 rounded-full border ${
-                      isActive
-                        ? "border-[#B7833E] bg-[#B7833E]"
-                        : "border-white/30"
-                    }`}
-                  />
-                </div>
-                {item.description ? (
-                  <p className="mt-3 text-sm leading-relaxed text-white/55">
-                    {item.description}
-                  </p>
-                ) : null}
-                <p className="mt-3 text-xs uppercase tracking-[0.16em] text-white/40">
-                  Ежедневно {item.openTime} до {item.closeTime}
-                </p>
-              </button>
-            );
-          })}
+      </section>
+
+      {/* Мы на картах */}
+      <section id="maps" className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">
+          Мы на картах
+        </p>
+        <h2 className="guest-display mt-2 text-2xl font-semibold text-white">
+          Постройте маршрут к нам
+        </h2>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <a
+            href="https://yandex.ru/maps/org/uchkuduk/65264289157/?ll=30.279601%2C59.939102&z=16"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
+          >
+            <p className="guest-display text-lg font-semibold text-white">
+              Яндекс Карты
+            </p>
+            <p className="mt-2 text-sm text-white/60">
+              Посмотреть адрес и проложить маршрут
+            </p>
+          </a>
+          <a
+            href="https://2gis.ru/spb/firm/70000001050218284?immersive=on"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
+          >
+            <p className="guest-display text-lg font-semibold text-white">
+              2ГИС
+            </p>
+            <p className="mt-2 text-sm text-white/60">
+              Найти нас в навигаторе и по телефону
+            </p>
+          </a>
+          <a
+            href="https://www.google.com/maps/place/%D0%A3%D1%87%D0%BA%D1%83%D0%94%D1%83%D0%BA/@59.9391759,30.2794907,21z/data=!4m22!1m15!4m14!1m6!1m2!1s0x469631a5e66d51c5:0x6f00589ac258db97!2z0J3QtdCy0YHQutC40Lkg0L_RgC4sINCh0LDQvdC60YIt0J_QtdGC0LXRgNCx0YPRgNCz!2m2!1d30.3605437!2d59.9311778!1m6!1m2!1s0x46963126b8a9e59b:0x1cfa29683ef58416!2z0KPRh9C60YPQlNGD0LosIDkt0Y8g0LvQuNC9LiwgMTYsINCh0LDQvdC60YIt0J_QtdGC0LXRgNCx0YPRgNCzLCAxOTkwMDQ!2m2!1d30.2795063!2d59.9391377!3m5!1s0x46963126b8a9e59b:0x1cfa29683ef58416!8m2!3d59.9391377!4d30.2795063!16s%2Fg%2F11bxf_3k1d?entry=ttu&g_ep=EgoyMDI2MDgyNi4wIKXMDSoASAFQAw%3D%3D"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
+          >
+            <p className="guest-display text-lg font-semibold text-white">
+              Google Карты
+            </p>
+            <p className="mt-2 text-sm text-white/60">
+              Прокладывать маршрут на смартфоне
+            </p>
+          </a>
         </div>
       </section>
 

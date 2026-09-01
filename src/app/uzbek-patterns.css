@@ -1,0 +1,156 @@
+/* Узбекские узоры: сузани, гирих и «туй» для гостевой части сайта.
+   Орнаменты рисуются текущим цветом (currentColor) и наследуют
+   палитру тёмной восточной темы: тёплый золотой на глубоком графите. */
+
+/* ── Лента под шапкой ───────────────────────────────────────────── */
+.uzb-pattern-border {
+  position: relative;
+}
+.uzb-pattern-border::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background-image: url("/patterns/girih-stripe.svg");
+  background-size: 56px 14px;
+  background-repeat: repeat-x;
+  background-position: center top;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Мелкая плитка на всю страницу ──────────────────────────────── */
+.uzb-pattern-bg {
+  position: relative;
+}
+.uzb-pattern-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/patterns/tile-girih.svg");
+  background-size: 84px 84px;
+  background-repeat: repeat;
+  opacity: 0.035;
+  pointer-events: none;
+}
+
+/* ── Восьмиконечная звезда у заголовка ──────────────────────────── */
+.uzb-star {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.uzb-star::before {
+  content: "";
+  width: 26px;
+  height: 26px;
+  background: url("/patterns/star-8.svg") center / contain no-repeat;
+  opacity: 0.85;
+}
+
+/* ── Крупный медальон в углу секции ─────────────────────────────── */
+.uzb-medallion {
+  position: relative;
+}
+.uzb-medallion::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: clamp(96px, 16vw, 190px);
+  height: clamp(96px, 16vw, 190px);
+  background: url("/patterns/medallion.svg") center / contain no-repeat;
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+/* ── Разделитель между секциями ─────────────────────────────────── */
+.uzb-divider {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  color: var(--night-gold);
+  opacity: 0.65;
+}
+.uzb-divider svg {
+  width: min(320px, 82%);
+  height: 40px;
+}
+
+/* ── Орнаментальная рамка вокруг карточек ───────────────────────── */
+.uzb-card-border {
+  position: relative;
+  border: 1px solid rgba(215, 170, 80, 0.22);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(35, 43, 38, 0.98), rgba(25, 31, 28, 0.98));
+}
+.uzb-card-border::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(215, 170, 80, 0.14);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.uzb-card-border::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 20px;
+  background: url("/patterns/star-8.svg") center / contain no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ── Карточки филиалов: тонкий уголок с узором ──────────────────── */
+.uzb-corner::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 42px;
+  height: 42px;
+  border-right: 2px solid rgba(215, 170, 80, 0.32);
+  border-bottom: 2px solid rgba(215, 170, 80, 0.32);
+  border-radius: 0 0 14px 0;
+  opacity: 0.85;
+}
+
+/* ── Фон секций: крупная звёздная россыпь ───────────────────────── */
+.uzb-starfield::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(215, 170, 80, 0.08), transparent 1px),
+    radial-gradient(circle at 88% 12%, rgba(215, 170, 80, 0.07), transparent 1px),
+    radial-gradient(circle at 68% 82%, rgba(215, 170, 80, 0.06), transparent 1px),
+    radial-gradient(circle at 24% 76%, rgba(215, 170, 80, 0.06), transparent 1px),
+    radial-gradient(circle at 46% 42%, rgba(215, 170, 80, 0.05), transparent 1px);
+  pointer-events: none;
+}
+
+/* ── Цвет узоров по умолчанию ───────────────────────────────────── */
+.uzb-pattern-border,
+.uzb-pattern-bg,
+.uzb-star,
+.uzb-medallion,
+.uzb-divider,
+.uzb-card-border {
+  color: var(--night-gold, #d7aa50);
+}
+
+@media (max-width: 640px) {
+  .uzb-medallion::after {
+    width: 76px;
+    height: 76px;
+  }
+}

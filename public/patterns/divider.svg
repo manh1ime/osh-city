@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 40" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+  <!-- Разделитель: звезда между линиями -->
+  <g fill="none" stroke="currentColor" stroke-linejoin="round">
+    <path d="M0 20 H270 M370 20 H640" stroke-width="1.5" />
+    <circle cx="280" cy="20" r="3" fill="currentColor" stroke="none" />
+    <circle cx="360" cy="20" r="3" fill="currentColor" stroke="none" />
+    <path d="M320 6 L328 17 L340 20 L328 23 L320 34 L312 23 L300 20 L312 17 Z" stroke-width="2" />
+    <path d="M320 12 L324.5 18.5 L331 20 L324.5 21.5 L320 28 L315.5 21.5 L309 20 L315.5 18.5 Z" stroke-width="1.2" opacity="0.8" />
+    <circle cx="320" cy="20" r="2" fill="currentColor" stroke="none" />
+  </g>
+</svg>

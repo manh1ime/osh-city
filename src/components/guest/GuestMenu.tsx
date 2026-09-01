@@ -53,6 +53,7 @@ export function GuestMenu({
   table,
   tableToken,
   reservation,
+  viewOnly = false,
   categories,
 }: {
   restaurant: {
@@ -71,6 +72,7 @@ export function GuestMenu({
   };
   tableToken?: string;
   reservation?: { code: string; dateLabel: string; timeLabel: string };
+  viewOnly?: boolean;
   categories: GuestCategoryDto[];
 }) {
   const router = useRouter();
@@ -109,23 +111,25 @@ export function GuestMenu({
     return map;
   }, [categories]);
 
-  // Корзина живет на клиенте до отправки заказа
+  // Корзина живет на клиенте до отправки заказа. В режиме просмотра ее нет.
   useEffect(() => {
+    if (viewOnly) return;
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (raw) setCart(JSON.parse(raw) as CartLine[]);
     } catch {
       /* ignore */
     }
-  }, [storageKey]);
+  }, [storageKey, viewOnly]);
 
   useEffect(() => {
+    if (viewOnly) return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(cart));
     } catch {
       /* ignore */
     }
-  }, [cart, storageKey]);
+  }, [cart, storageKey, viewOnly]);
 
   const filteredCategories = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("ru-RU");
@@ -183,6 +187,7 @@ export function GuestMenu({
     origin?: DOMRect,
     variant = "",
   ) {
+    if (viewOnly) return;
     const item = itemsById.get(itemId);
     if (!item || item.isStopListed) return;
     animateToCart(item, origin);
@@ -242,7 +247,7 @@ export function GuestMenu({
   }
 
   async function submitOrder() {
-    if (cart.length === 0 || submitting) return;
+    if (viewOnly || cart.length === 0 || submitting) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -295,7 +300,7 @@ export function GuestMenu({
   }
 
   async function callWaiter(type: "WAITER" | "BILL") {
-    if (!tableToken) return;
+    if (viewOnly || !tableToken) return;
     setCallState("sending");
     try {
       const response = await fetch("/api/guest/call", {
@@ -339,7 +344,9 @@ export function GuestMenu({
                 {restaurant.name}
               </p>
               <p className="mt-0.5 text-xs text-ink-400">
-              {reservation ? (
+              {viewOnly ? (
+                <>Просмотр меню ресторана</>
+              ) : reservation ? (
                 <>
                   Предзаказ к брони {reservation.code} · {reservation.dateLabel}{" "}
                   в {reservation.timeLabel}
@@ -354,17 +361,21 @@ export function GuestMenu({
             </div>
           </div>
           <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
-            <Link
-              href={
-                reservation
-                  ? `/reservation/${reservation.code}`
-                  : `/menu/${tableToken}/activity`
-              }
+            {viewOnly ? (
+              <Link
+                href="/"
+                className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 py-2.5 text-center text-sm font-medium text-ink-700 transition hover:bg-cream-100 sm:flex-none"
+              >
+                На главную
+              </Link>
+            ) : null}
+            {!viewOnly ? <Link
+              href={reservation ? `/reservation/${reservation.code}` : `/menu/${tableToken}/activity`}
               className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 py-2.5 text-center text-sm font-medium text-ink-700 transition hover:bg-cream-100 sm:flex-none"
             >
               {reservation ? "Моя бронь" : "Мои заказы"}
-            </Link>
-            {!reservation ? (
+            </Link> : null}
+            {!viewOnly && !reservation ? (
               <button
                 type="button"
                 onClick={() => callWaiter("WAITER")}
@@ -414,9 +425,11 @@ export function GuestMenu({
           <div className="mt-3 flex items-start gap-3 rounded-lg border border-cream-200 bg-white px-4 py-3.5">
             <span className="mt-1 block h-2 w-2 shrink-0 rounded-full bg-wine-600" />
             <p className="text-sm leading-relaxed text-ink-600">
-              {reservation
-                ? "Предзаказ увидит старший официант вашего филиала. Способ приготовления вы выберете в корзине."
-                : "Заказ увидит официант и подтвердит перед передачей на кухню."}
+              {viewOnly
+                ? "Это гостевое меню только для просмотра. Заказ можно оформить за столом по QR-коду или предзаказом к брони."
+                : reservation
+                  ? "Предзаказ увидит старший официант вашего филиала. Способ приготовления вы выберете в корзине."
+                  : "Заказ увидит официант и подтвердит перед передачей на кухню."}
             </p>
           </div>
           {callMessage && callState !== "idle" ? (
@@ -426,7 +439,7 @@ export function GuestMenu({
               {callMessage}
             </p>
           ) : null}
-          {!restaurant.isOrderingEnabled ? (
+          {!viewOnly && !restaurant.isOrderingEnabled ? (
             <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               Сейчас заказы через меню временно недоступны. Обратитесь к
               официанту.
@@ -446,17 +459,15 @@ export function GuestMenu({
               type="search"
               maxLength={60}
             />
-            <button
+            {!viewOnly ? <button
               ref={cartButtonRef}
               type="button"
               onClick={() => setCartOpen(true)}
               className={`flex h-11 shrink-0 items-center gap-2 rounded-lg bg-ink-900 px-4 text-sm font-semibold text-white transition hover:bg-ink-700 ${cartBounce ? "cart-target-bounce" : ""}`}
             >
               <span>Корзина</span>
-              <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-xs">
-                {cartCount}
-              </span>
-            </button>
+              <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-xs">{cartCount}</span>
+            </button> : null}
           </div>
           <div className="no-scrollbar mt-2 flex gap-1.5 overflow-x-auto pb-0.5">
             {categories.map((category) => (
@@ -556,7 +567,7 @@ export function GuestMenu({
                           </p>
                         ) : null}
                       </div>
-                      <button
+                      {!viewOnly ? <button
                         type="button"
                         disabled={
                           item.isStopListed || !restaurant.isOrderingEnabled
@@ -580,7 +591,7 @@ export function GuestMenu({
                         className="flex h-9 min-w-9 items-center justify-center rounded-lg bg-wine-600 px-3 text-sm font-semibold text-white transition hover:bg-wine-700 disabled:bg-cream-200 disabled:text-ink-400"
                       >
                         {item.isStopListed ? "Нет" : "+ Добавить"}
-                      </button>
+                      </button> : null}
                     </div>
                   </div>
                 </article>
@@ -624,7 +635,8 @@ export function GuestMenu({
         <ItemSheet
           item={openItem}
           currency={restaurant.currency}
-          disabled={!restaurant.isOrderingEnabled}
+           disabled={!restaurant.isOrderingEnabled}
+           viewOnly={viewOnly}
           onClose={() => setOpenItem(null)}
           onAdd={(quantity, comment, origin, variant) => {
             addToCart(openItem.id, quantity, comment, origin, variant);
@@ -634,7 +646,7 @@ export function GuestMenu({
       ) : null}
 
       {/* Bottom sheet корзины */}
-      {cartOpen ? (
+      {cartOpen && !viewOnly ? (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink-900/35 p-0 backdrop-blur-[2px] animate-fade-in sm:items-center sm:p-6">
           <button
             type="button"
@@ -836,12 +848,14 @@ function ItemSheet({
   item,
   currency,
   disabled,
+  viewOnly,
   onClose,
   onAdd,
 }: {
   item: GuestItemDto;
   currency: string;
   disabled: boolean;
+  viewOnly: boolean;
   onClose: () => void;
   onAdd: (quantity: number, comment: string, origin: DOMRect, variant: string) => void;
 }) {
@@ -859,23 +873,49 @@ function ItemSheet({
       />
       <div className="relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-cream-200 bg-white shadow-sheet animate-sheet-up sm:max-w-xl sm:rounded-2xl">
         {item.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            className="h-60 w-full object-cover sm:h-72"
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.imageUrl}
+              alt={item.name}
+              className="h-60 w-full object-cover sm:h-72"
+            />
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Закрыть"
+              className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </>
         ) : null}
         <div className="p-5">
-          <div className="flex flex-wrap gap-1.5">
-            {item.badges.map((badge) => (
-              <span key={badge} className="badge bg-wine-50 text-wine-700">
-                {badge}
-              </span>
-            ))}
-            {item.isStopListed ? (
-              <span className="badge bg-cream-200 text-ink-500">Стоп-лист</span>
-            ) : null}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap gap-1.5">
+              {item.badges.map((badge) => (
+                <span key={badge} className="badge bg-wine-50 text-wine-700">
+                  {badge}
+                </span>
+              ))}
+              {item.isStopListed ? (
+                <span className="badge bg-cream-200 text-ink-500">Стоп-лист</span>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Закрыть"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream-200 text-ink-500 transition hover:bg-cream-300 hover:text-ink-700"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
           <h3 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900">
             {item.name}
@@ -906,7 +946,13 @@ function ItemSheet({
             ) : null}
           </div>
 
-          {isDobryJuice(item) ? (
+          {viewOnly ? (
+            <p className="mt-5 text-xl font-semibold tracking-tight text-ink-900">
+              {money(item.price, currency)}
+            </p>
+          ) : null}
+
+          {!viewOnly && isDobryJuice(item) ? (
             <div className="mt-5">
               <label className="label" htmlFor="item-variant">Вкус сока</label>
               <select id="item-variant" value={variant} onChange={(event) => setVariant(event.target.value)} className="input">
@@ -915,7 +961,7 @@ function ItemSheet({
             </div>
           ) : null}
 
-          <div className="mt-5">
+          {!viewOnly ? <div className="mt-5">
             <label className="label" htmlFor="item-comment">
               Комментарий к блюду
             </label>
@@ -933,9 +979,9 @@ function ItemSheet({
             <p className="mt-1 text-right text-[11px] text-ink-400">
               {comment.length}/{LIMITS.itemComment}
             </p>
-          </div>
+          </div> : null}
 
-          <div className="mt-4 flex items-center justify-between">
+          {!viewOnly ? <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -962,9 +1008,9 @@ function ItemSheet({
             <p className="text-xl font-semibold tracking-tight">
               {money(item.price * quantity, currency)}
             </p>
-          </div>
+          </div> : null}
 
-          <button
+          {!viewOnly ? <button
             type="button"
             disabled={item.isStopListed || disabled}
             onClick={(event) =>
@@ -978,7 +1024,7 @@ function ItemSheet({
             className="btn-primary mt-5 w-full"
           >
             {item.isStopListed ? "Блюдо в стоп-листе" : "Добавить в корзину"}
-          </button>
+          </button> : null}
         </div>
       </div>
     </div>

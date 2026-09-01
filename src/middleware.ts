@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
 
-  if (pathname.startsWith("/menu") || pathname.startsWith("/order")) {
+  if (pathname === "/menu" || pathname.startsWith("/menu/") || pathname.startsWith("/order")) {
     if (!request.cookies.get(GUEST_COOKIE)?.value) {
       response.cookies.set(GUEST_COOKIE, `gs_${crypto.randomUUID()}`, {
         httpOnly: true,

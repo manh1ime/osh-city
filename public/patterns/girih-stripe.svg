@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <!-- Гирих-лента: бегущий ромбовидный орнамент -->
+  <g fill="none" stroke="currentColor" stroke-linejoin="round">
+    <path d="M32 4 L60 32 L32 60 L4 32 Z" stroke-width="2" />
+    <path d="M32 12 L52 32 L32 52 L12 32 Z" stroke-width="1.5" opacity="0.8" />
+    <circle cx="32" cy="32" r="4" fill="currentColor" stroke="none" />
+    <path d="M-8 32 h24 M48 32 h24" stroke-width="2" />
+    <circle cx="32" cy="0" r="3" stroke-width="1.5" fill="none" />
+    <circle cx="32" cy="64" r="3" stroke-width="1.5" fill="none" />
+    <circle cx="0" cy="32" r="3" stroke-width="1.5" fill="none" />
+    <circle cx="64" cy="32" r="3" stroke-width="1.5" fill="none" />
+  </g>
+</svg>

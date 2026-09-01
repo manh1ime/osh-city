@@ -128,6 +128,19 @@ export function MenuManager({
         </p>
       ) : null}
 
+      <p className="mt-4 rounded-xl border border-cream-200 bg-cream-100 px-4 py-3 text-sm text-ink-600">
+        Активные блюда сразу появляются в гостевом меню:{" "}
+        <a
+          href="/menu"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-wine-700 underline"
+        >
+          открыть просмотр
+        </a>
+        . Скрытые блюда и выключенные категории гостю не видны.
+      </p>
+
       <div className="card mt-5 grid gap-3 p-4 sm:grid-cols-3">
         <div>
           <label className="label" htmlFor="menu-search">

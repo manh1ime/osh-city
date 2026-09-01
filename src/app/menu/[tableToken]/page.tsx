@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { GuestMenu } from "@/components/guest/GuestMenu";
 import { prisma } from "@/lib/db";
-import { parseBadges } from "@/lib/format";
-import { getGuestMenu } from "@/lib/menu";
+import { getGuestMenu, toGuestMenuDto } from "@/lib/menu";
 import { getRestaurant } from "@/lib/restaurant";
 import { GUEST_COOKIE } from "@/lib/session-token";
 
@@ -64,23 +63,7 @@ export default async function GuestMenuPage({
         currency: restaurant.currency,
         isOrderingEnabled: restaurant.isOrderingEnabled,
       }}
-      categories={categories.map((category) => ({
-        id: category.id,
-        name: category.name,
-        description: category.description,
-        items: category.menuItems.map((item) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          ingredients: item.ingredients,
-          allergens: item.allergens,
-          price: item.price,
-          weight: item.weight,
-          imageUrl: item.imageUrl,
-          badges: parseBadges(item.badges),
-          isStopListed: item.isStopListed,
-        })),
-      }))}
+      categories={toGuestMenuDto(categories)}
     />
   );
 }
