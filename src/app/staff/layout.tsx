@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { logoutAction } from "@/actions/auth";
+import { Logo } from "@/components/brand/Logo";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { roleLabel } from "@/lib/permissions";
@@ -34,14 +35,7 @@ export default async function StaffLayout({
       <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 max-w-full items-center gap-3">
-            {true ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src="/images/uchkuduk-logo.webp"
-                alt={`Логотип ${restaurant.name}`}
-                className="h-11 w-11 shrink-0 rounded-lg object-contain"
-              />
-            ) : null}
+            <Logo variant="emblem" className="h-11 w-11" alt="" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-base font-semibold tracking-tight">
                 {restaurant.name}

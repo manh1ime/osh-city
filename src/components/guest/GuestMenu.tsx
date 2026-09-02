@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Logo } from "@/components/brand/Logo";
 
 export type GuestItemDto = {
   id: string;
@@ -59,7 +60,6 @@ export function GuestMenu({
   restaurant: {
     name: string;
     description: string | null;
-    logoUrl: string | null;
     coverImageUrl: string | null;
     currency: string;
     isOrderingEnabled: boolean;
@@ -331,14 +331,7 @@ export function GuestMenu({
       <header className="border-b border-cream-200 bg-white">
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            {restaurant.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src="/images/uchkuduk-logo.webp"
-                alt={`Логотип ${restaurant.name}`}
-                className="h-11 w-11 shrink-0 rounded-lg object-contain"
-              />
-            ) : null}
+            <Logo variant="emblem" className="h-11 w-11" alt="" />
             <div className="min-w-0">
               <p className="truncate text-base font-semibold tracking-tight text-ink-900">
                 {restaurant.name}

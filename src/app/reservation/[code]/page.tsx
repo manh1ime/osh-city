@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getRestaurant } from "@/lib/restaurant";
+import { Logo } from "@/components/brand/Logo";
 import { ReservationCancelButton } from "@/components/guest/ReservationCancelButton";
 import { cookies } from "next/headers";
 import { GUEST_PHONE_COOKIE } from "@/lib/session-token";
@@ -50,12 +51,15 @@ export default async function ReservationPage({
   return (
     <div className="guest-theme min-h-screen bg-[#121514] px-4 py-12 text-ink-900 sm:px-6">
       <div className="mx-auto max-w-xl">
-        <Link
-          href="/"
-          className="text-xs uppercase tracking-[0.16em] text-white/40 transition hover:text-white/70"
-        >
-          ← {restaurant.name}
-        </Link>
+        <div className="flex items-center gap-3">
+          <Logo variant="emblem" className="h-12 w-12" alt="" />
+          <Link
+            href="/"
+            className="text-xs uppercase tracking-[0.16em] text-white/40 transition hover:text-white/70"
+          >
+            ← {restaurant.name}
+          </Link>
+        </div>
 
         <div className="guest-menu-card mt-4 rounded-2xl p-6 sm:p-8">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">

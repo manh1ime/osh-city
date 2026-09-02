@@ -1,4 +1,5 @@
 import { GuestActivity } from "@/components/guest/GuestActivity";
+import { Logo } from "@/components/brand/Logo";
 import { prisma } from "@/lib/db";
 import { getRestaurant } from "@/lib/restaurant";
 
@@ -15,7 +16,8 @@ export default async function GuestActivityPage({
   ]);
   if (!table || table.restaurantId !== restaurant.id || !table.isActive)
     return (
-      <main className="guest-theme flex min-h-screen items-center justify-center">
+      <main className="guest-theme flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+        <Logo variant="emblem" className="h-20 w-20" />
         <p>Стол не найден</p>
       </main>
     );

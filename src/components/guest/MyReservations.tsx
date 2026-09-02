@@ -7,6 +7,7 @@ import {
   cancelMyReservationAction,
   lookupReservationsAction,
 } from "@/actions/reservations";
+import { Logo } from "@/components/brand/Logo";
 import { preorderStatusLabel } from "@/lib/format";
 
 export type GuestReservationDto = {
@@ -92,15 +93,20 @@ export function MyReservations({ restaurantName, phone, reservations }: Props) {
   return (
     <div className="guest-theme min-h-screen bg-[#121514] px-4 py-10 text-ink-900 sm:px-6">
       <div className="mx-auto max-w-2xl">
-        <Link
-          href="/"
-          className="text-xs uppercase tracking-[0.16em] text-white/40 transition hover:text-white/70"
-        >
-          {restaurantName}
-        </Link>
-        <h1 className="guest-display mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
-          Мои бронирования
-        </h1>
+        <div className="flex items-center gap-3">
+          <Logo variant="emblem" className="h-12 w-12" alt="" />
+          <div className="min-w-0">
+            <Link
+              href="/"
+              className="text-xs uppercase tracking-[0.16em] text-white/40 transition hover:text-white/70"
+            >
+              {restaurantName}
+            </Link>
+            <h1 className="guest-display mt-1 text-3xl font-semibold tracking-[-0.03em] text-white">
+              Мои бронирования
+            </h1>
+          </div>
+        </div>
 
         {phone ? (
           <p className="mt-2 text-sm text-white/55">Номер {phone}</p>

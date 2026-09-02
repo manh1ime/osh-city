@@ -1,3 +1,5 @@
+import { Logo } from "@/components/brand/Logo";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -12,11 +14,7 @@ export default async function StaffLoginPage({
     <main className="flex min-h-screen items-center justify-center bg-ink-900 px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <img
-            src="/images/uchkuduk-logo.webp"
-            alt="Логотип Учкудук"
-            className="mx-auto h-40 w-40 rounded-2xl object-contain"
-          />
+          <Logo variant="full" className="mx-auto h-40 w-40" />
           <h1 className="mt-3 font-display text-3xl text-white">
             Панель персонала
           </h1>

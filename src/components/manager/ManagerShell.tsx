@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { logoutManagerAction } from "@/actions/auth";
+import { Logo } from "@/components/brand/Logo";
 
 type Role = "WAITER" | "MANAGER";
 const NAV: Array<{ href: string; label: string; roles: Role[] }> = [
@@ -53,11 +54,7 @@ export function ManagerShell({
       >
         <div className="flex items-start justify-between px-2">
           <div className="min-w-0">
-            <img
-              src="/images/uchkuduk-logo.webp"
-              alt="Логотип Учкудук"
-              className="h-20 w-20 rounded-xl object-contain"
-            />
+            <Logo variant="full" className="h-24 w-24" alt="" />
             <p className="mt-2 truncate text-base font-semibold tracking-tight text-ink-900">
               {restaurantName}
             </p>
@@ -105,6 +102,8 @@ export function ManagerShell({
               >
                 Меню
               </button>
+              {/* Сайдбар с логотипом на мобильных скрыт, поэтому дублируем герб здесь. */}
+              <Logo variant="emblem" className="h-9 w-9 lg:hidden" alt="" />
               <div>
                 <p className="text-sm font-semibold text-ink-900">{userName}</p>
                 <p className="text-xs text-ink-400">{roleLabel}</p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { OrderStatusLive } from "@/components/guest/OrderStatusLive";
+import { Logo } from "@/components/brand/Logo";
 import { prisma } from "@/lib/db";
 import { formatMoney, formatTime } from "@/lib/format";
 import { getRestaurant } from "@/lib/restaurant";
@@ -32,6 +33,7 @@ export default async function GuestOrderPage({
   ) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-ink-900 px-6 text-center">
+        <Logo variant="emblem" className="mb-5 h-20 w-20" />
         <h1 className="font-display text-3xl text-white">Заказ не найден</h1>
         <p className="mt-3 max-w-sm text-sm text-cream-200/70">
           Пожалуйста, обратитесь к персоналу: они проверят заказ в системе.
@@ -44,7 +46,8 @@ export default async function GuestOrderPage({
     <main className="guest-theme min-h-screen bg-[#121514] px-4 pb-16 pt-10">
       <div className="mx-auto max-w-lg">
         <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-wine-600/10 text-2xl text-wine-600">
+          <Logo variant="full" className="mx-auto h-28 w-28" alt="" />
+          <div className="mx-auto mt-4 flex h-14 w-14 items-center justify-center rounded-full bg-wine-600/10 text-2xl text-wine-600">
             ✓
           </div>
           <h1 className="mt-4 font-display text-3xl text-ink-900">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { Logo } from "@/components/brand/Logo";
 
 type OrderStatus =
   "NEW" | "ACCEPTED" | "SENT_TO_KITCHEN" | "COMPLETED" | "CANCELED";
@@ -84,13 +85,16 @@ export function GuestActivity({
     <main className="guest-theme min-h-screen bg-[#121514] px-4 pb-16 pt-6">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs text-ink-400">
-              {restaurantName} · стол {tableNumber}
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold text-ink-900">
-              Мои заказы
-            </h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <Logo variant="emblem" className="h-12 w-12" alt="" />
+            <div className="min-w-0">
+              <p className="text-xs text-ink-400">
+                {restaurantName} · стол {tableNumber}
+              </p>
+              <h1 className="mt-1 text-3xl font-semibold text-ink-900">
+                Мои заказы
+              </h1>
+            </div>
           </div>
           <Link href={`/menu/${tableToken}`} className="btn-ghost btn-sm">
             Вернуться в меню

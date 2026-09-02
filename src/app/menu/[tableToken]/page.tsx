@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { GuestMenu } from "@/components/guest/GuestMenu";
+import { Logo } from "@/components/brand/Logo";
 import { prisma } from "@/lib/db";
 import { getGuestMenu, toGuestMenuDto } from "@/lib/menu";
 import { getRestaurant } from "@/lib/restaurant";
@@ -11,9 +12,7 @@ function InvalidQrScreen() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-cream-100 px-6 text-center">
       <div className="w-full max-w-sm rounded-2xl border border-cream-200 bg-white p-8">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-cream-100 text-lg font-semibold text-ink-500">
-          !
-        </div>
+        <Logo variant="full" className="mx-auto mb-5 h-28 w-28" />
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
           QR-код недействителен
         </h1>
@@ -58,7 +57,6 @@ export default async function GuestMenuPage({
       restaurant={{
         name: restaurant.name,
         description: restaurant.description,
-        logoUrl: "/images/uchkuduk-logo.webp",
         coverImageUrl: restaurant.coverImageUrl,
         currency: restaurant.currency,
         isOrderingEnabled: restaurant.isOrderingEnabled,

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createReservationAction } from "@/actions/reservations";
+import { Logo } from "@/components/brand/Logo";
 import type { BranchDto } from "@/lib/branches";
 import {
   RESERVATION_LIMITS,
@@ -15,7 +16,6 @@ import {
 type RestaurantDto = {
   name: string;
   description: string | null;
-  logoUrl: string | null;
   coverImageUrl: string | null;
 };
 
@@ -109,14 +109,7 @@ export function LandingPage({ restaurant, branches }: Props) {
       <header className="uzb-pattern-border sticky top-0 z-30 border-b border-white/10 bg-[#121514]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            {restaurant.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src="/images/uchkuduk-logo.webp"
-                alt={`Логотип ${restaurant.name}`}
-                className="h-10 w-10 shrink-0 rounded-lg object-contain"
-              />
-            ) : null}
+            <Logo variant="emblem" className="h-10 w-10" alt="" />
             <span className="guest-display uzb-star truncate text-lg font-semibold tracking-[-0.02em] text-white">
               {restaurant.name}
             </span>
@@ -153,10 +146,10 @@ export function LandingPage({ restaurant, branches }: Props) {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/45" />
         <div className="uzb-medallion relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-          <img
-            src="/images/uchkuduk-logo.webp"
-            alt="Логотип Учкудук"
-            className="mb-7 h-48 w-48 max-w-[70vw] rounded-2xl object-contain sm:h-56 sm:w-56"
+          <Logo
+            variant="full"
+            className="mb-7 h-48 w-48 max-w-[70vw] sm:h-56 sm:w-56"
+            alt=""
           />
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/60">
             Санкт-Петербург · два филиала
