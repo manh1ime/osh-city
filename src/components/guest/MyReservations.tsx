@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   cancelMyReservationAction,
-  forgetGuestPhoneAction,
   lookupReservationsAction,
 } from "@/actions/reservations";
 import { preorderStatusLabel } from "@/lib/format";
@@ -87,13 +86,6 @@ export function MyReservations({ restaurantName, phone, reservations }: Props) {
     });
   }
 
-  function forget() {
-    startTransition(async () => {
-      await forgetGuestPhoneAction();
-      router.refresh();
-    });
-  }
-
   const upcoming = reservations.filter((item) => !item.isPast);
   const past = reservations.filter((item) => item.isPast);
 
@@ -111,17 +103,7 @@ export function MyReservations({ restaurantName, phone, reservations }: Props) {
         </h1>
 
         {phone ? (
-          <p className="mt-2 text-sm text-white/55">
-            Номер {phone}
-            <button
-              type="button"
-              onClick={forget}
-              disabled={isPending}
-              className="ml-3 text-xs uppercase tracking-[0.16em] text-white/40 underline transition hover:text-white/70"
-            >
-              Сменить номер
-            </button>
-          </p>
+          <p className="mt-2 text-sm text-white/55">Номер {phone}</p>
         ) : (
           <p className="mt-2 text-sm text-white/55">
             Укажите номер телефона, на который оформляли бронь.

@@ -280,14 +280,6 @@ export async function lookupReservationsAction(
   return { ok: true };
 }
 
-/** Забыть телефон: полезно на общем устройстве. */
-export async function forgetGuestPhoneAction(): Promise<{ ok: boolean }> {
-  const store = await cookies();
-  store.delete(GUEST_PHONE_COOKIE);
-  revalidatePath("/my-reservations");
-  return { ok: true };
-}
-
 /** Гость отменяет свою бронь по коду. Проверяем, что телефон совпадает с cookie. */
 export async function cancelMyReservationAction(
   code: string,

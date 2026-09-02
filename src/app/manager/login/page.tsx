@@ -15,7 +15,7 @@ export default async function ManagerLoginPage({
           <img
             src="/images/uchkuduk-logo.webp"
             alt="Логотип Учкудук"
-            className="mx-auto h-auto w-56 rounded-2xl bg-white object-contain p-2 shadow-2xl"
+            className="mx-auto h-40 w-40 rounded-2xl object-contain"
           />
 
           <h1 className="mt-3 font-display text-3xl text-white">

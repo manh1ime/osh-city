@@ -156,7 +156,7 @@ export function LandingPage({ restaurant, branches }: Props) {
           <img
             src="/images/uchkuduk-logo.webp"
             alt="Логотип Учкудук"
-            className="mb-7 h-auto w-64 max-w-[75vw] rounded-2xl bg-white object-contain p-2 shadow-2xl sm:w-80"
+            className="mb-7 h-48 w-48 max-w-[70vw] rounded-2xl object-contain sm:h-56 sm:w-56"
           />
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/60">
             Санкт-Петербург · два филиала

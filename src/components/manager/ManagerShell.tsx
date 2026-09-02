@@ -56,7 +56,7 @@ export function ManagerShell({
             <img
               src="/images/uchkuduk-logo.webp"
               alt="Логотип Учкудук"
-              className="h-auto w-40 rounded-xl bg-white object-contain p-1"
+              className="h-20 w-20 rounded-xl object-contain"
             />
             <p className="mt-2 truncate text-base font-semibold tracking-tight text-ink-900">
               {restaurantName}
