@@ -19,9 +19,14 @@ export function ReservationCancelButton({ code }: Props) {
     setError(null);
 
     startTransition(async () => {
-      const result = await cancelMyReservationAction(code);
-      if (!result.ok) {
-        setError(result.error ?? "Не удалось отменить бронь");
+      try {
+        const result = await cancelMyReservationAction(code);
+        if (!result.ok) {
+          setError(result.error ?? "Не удалось отменить бронь");
+          return;
+        }
+      } catch {
+        setError("Нет связи с сервером. Повторите попытку.");
         return;
       }
       router.refresh();

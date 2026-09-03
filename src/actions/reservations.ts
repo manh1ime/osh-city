@@ -40,6 +40,27 @@ const RESERVATION_TRANSITIONS: Record<
   NO_SHOW: [],
 };
 
+/**
+ * Ошибка внутри server action роняет всю страницу на «Application error».
+ * Персоналу и гостю нужен обычный текст ошибки, поэтому любую проблему
+ * (нет сессии, недостаточно прав, сбой БД) возвращаем как результат.
+ */
+async function guarded(
+  label: string,
+  task: () => Promise<{ ok: boolean; error?: string }>,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    return await task();
+  } catch (error) {
+    console.error(label, error);
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Не удалось выполнить действие";
+    return { ok: false, error: message };
+  }
+}
+
 /** Запоминаем телефон гостя, чтобы раздел «Мои бронирования» открывался сразу. */
 async function rememberGuestPhone(phone: string) {
   const store = await cookies();
@@ -54,6 +75,15 @@ async function rememberGuestPhone(phone: string) {
 
 /** Старший официант принимает предзаказ и управляет передачей на кухню. */
 export async function setReservationPreorderStatusAction(
+  preorderId: string,
+  nextStatus: "CONFIRMED" | "IN_KITCHEN" | "READY" | "CANCELED",
+): Promise<{ ok: boolean; error?: string }> {
+  return guarded("setReservationPreorderStatusAction", () =>
+    setReservationPreorderStatus(preorderId, nextStatus),
+  );
+}
+
+async function setReservationPreorderStatus(
   preorderId: string,
   nextStatus: "CONFIRMED" | "IN_KITCHEN" | "READY" | "CANCELED",
 ): Promise<{ ok: boolean; error?: string }> {
@@ -284,6 +314,14 @@ export async function lookupReservationsAction(
 export async function cancelMyReservationAction(
   code: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  return guarded("cancelMyReservationAction", () =>
+    cancelMyReservation(code),
+  );
+}
+
+async function cancelMyReservation(
+  code: string,
+): Promise<{ ok: boolean; error?: string }> {
   const store = await cookies();
   const phone = normalizeRussianPhone(store.get(GUEST_PHONE_COOKIE)?.value ?? "");
   if (!phone) return { ok: false, error: "Сначала укажите телефон" };
@@ -338,6 +376,14 @@ export async function cancelMyReservationAction(
  * Старший официант работает только со своим филиалом, менеджер видит оба.
  */
 export async function setReservationStatusAction(
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string }> {
+  return guarded("setReservationStatusAction", () =>
+    setReservationStatus(formData),
+  );
+}
+
+async function setReservationStatus(
   formData: FormData,
 ): Promise<{ ok: boolean; error?: string }> {
   const session = await requireRole(["SENIOR_WAITER", "MANAGER"]);

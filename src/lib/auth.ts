@@ -131,12 +131,24 @@ export async function requireManager(
   return session;
 }
 
-/** Для server actions: выбрасывает ошибку вместо редиректа. */
+/**
+ * Для server actions: выбрасывает ошибку вместо редиректа.
+ * Менеджер и персонал держат РАЗНЫЕ cookie (вход в одну область удаляет вторую),
+ * поэтому для действий, разрешённых обеим ролям, проверяем обе области.
+ * Иначе менеджер получал «Не авторизован» на действиях брони и предзаказа.
+ */
 export async function requireRole(roles: SessionRole[]): Promise<Session> {
-  const area: SessionArea =
-    roles.length === 1 && roles[0] === "MANAGER" ? "manager" : "staff";
-  const session = await getSession(area);
-  if (!session) throw new Error("Не авторизован");
-  if (!roles.includes(session.role)) throw new Error("Недостаточно прав");
-  return session;
+  const areas: SessionArea[] = roles.includes("MANAGER")
+    ? ["manager", "staff"]
+    : ["staff"];
+
+  let hasSession = false;
+  for (const area of areas) {
+    const session = await getSession(area);
+    if (!session) continue;
+    hasSession = true;
+    if (roles.includes(session.role)) return session;
+  }
+
+  throw new Error(hasSession ? "Недостаточно прав" : "Не авторизован");
 }

@@ -93,27 +93,37 @@ export function ManagerShell({
 
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-20 border-b border-cream-200 bg-white/95 backdrop-blur">
-          <div className="flex min-h-16 items-center justify-between gap-4 px-4 lg:px-8">
-            <div className="flex items-center gap-3">
+          <div className="flex min-h-16 items-center justify-between gap-3 px-4 lg:px-8">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="btn-ghost btn-sm lg:hidden"
+                className="btn-ghost btn-sm shrink-0 lg:hidden"
               >
                 Меню
               </button>
               {/* Сайдбар с логотипом на мобильных скрыт, поэтому дублируем герб здесь. */}
-              <Logo variant="emblem" className="h-9 w-9 lg:hidden" alt="" />
-              <div>
-                <p className="text-sm font-semibold text-ink-900">{userName}</p>
-                <p className="text-xs text-ink-400">{roleLabel}</p>
+              <Logo variant="emblem" className="h-9 w-9 shrink-0 lg:hidden" alt="" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-ink-900">
+                  {userName}
+                </p>
+                <p className="truncate text-xs text-ink-400">{roleLabel}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`hidden sm:inline-flex badge ${isOrderingEnabled ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
-              >
-                {isOrderingEnabled ? "Заказы принимаются" : "Заказы отключены"}
+            <div className="flex shrink-0 items-center gap-2">
+              {/*
+                Обёртка обязательна: глобальный CSS панели менеджера задаёт
+                span[class*="bg-emerald"] { display: inline-flex !important },
+                что перебивало Tailwind-класс hidden и выводило бейдж на телефоне
+                поверх имени сотрудника.
+              */}
+              <span className="hidden sm:block">
+                <span
+                  className={`badge whitespace-nowrap ${isOrderingEnabled ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}
+                >
+                  {isOrderingEnabled ? "Заказы принимаются" : "Заказы отключены"}
+                </span>
               </span>
               <form action={logoutManagerAction}>
                 <button type="submit" className="btn-ghost btn-sm">

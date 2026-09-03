@@ -77,10 +77,16 @@ export function MyReservations({ restaurantName, phone, reservations }: Props) {
 
   function cancel(code: string) {
     setError(null);
+    if (!window.confirm(`Отменить бронь ${code}?`)) return;
     startTransition(async () => {
-      const result = await cancelMyReservationAction(code);
-      if (!result.ok) {
-        setError(result.error ?? "Не удалось отменить бронь");
+      try {
+        const result = await cancelMyReservationAction(code);
+        if (!result.ok) {
+          setError(result.error ?? "Не удалось отменить бронь");
+          return;
+        }
+      } catch {
+        setError("Нет связи с сервером. Повторите попытку.");
         return;
       }
       router.refresh();

@@ -78,9 +78,15 @@ export function ReservationsBoard({
     formData.set("reservationId", id);
     formData.set("status", status);
     startTransition(async () => {
-      const result = await setReservationStatusAction(formData);
-      if (!result.ok) {
-        setError(result.error ?? "Не удалось обновить бронь");
+      try {
+        const result = await setReservationStatusAction(formData);
+        if (!result.ok) {
+          setError(result.error ?? "Не удалось обновить бронь");
+          return;
+        }
+      } catch {
+        // Сетевой сбой не должен ронять страницу через границу ошибок React.
+        setError("Нет связи с сервером. Повторите попытку.");
         return;
       }
       router.refresh();
@@ -93,8 +99,15 @@ export function ReservationsBoard({
   ) {
     setError(null);
     startTransition(async () => {
-      const result = await setReservationPreorderStatusAction(id, status);
-      if (!result.ok) setError(result.error ?? "Не удалось обновить предзаказ");
+      try {
+        const result = await setReservationPreorderStatusAction(id, status);
+        if (!result.ok) {
+          setError(result.error ?? "Не удалось обновить предзаказ");
+        }
+      } catch {
+        setError("Нет связи с сервером. Повторите попытку.");
+        return;
+      }
       router.refresh();
     });
   }
