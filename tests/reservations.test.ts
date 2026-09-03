@@ -6,22 +6,44 @@ import {
   isTimeWithinWorkingHours,
 } from "../src/lib/reservations";
 import {
+  canTransitionPreorder,
+  canTransitionReservation,
+  isPreorderFinal,
+  isReservationFinal,
+} from "../src/lib/reservation-status";
+import {
   createOrderSchema,
   normalizeRussianPhone,
   reservationSchema,
 } from "../src/lib/validation";
 
 test("allows only valid reservation status transitions", () => {
-  const transitions: Record<string, string[]> = {
-    PENDING: ["CONFIRMED", "SEATED", "CANCELED", "NO_SHOW"],
-    CONFIRMED: ["SEATED", "CANCELED", "NO_SHOW"],
-    SEATED: ["NO_SHOW"],
-    CANCELED: [],
-    NO_SHOW: [],
-  };
-  assert.equal(transitions.PENDING.includes("CONFIRMED"), true);
-  assert.equal(transitions.PENDING.includes("SEATED"), true);
-  assert.equal(transitions.CANCELED.includes("CONFIRMED"), false);
+  assert.equal(canTransitionReservation("PENDING", "CONFIRMED"), true);
+  assert.equal(canTransitionReservation("PENDING", "SEATED"), true);
+  assert.equal(canTransitionReservation("CONFIRMED", "SEATED"), true);
+  assert.equal(canTransitionReservation("SEATED", "NO_SHOW"), true);
+});
+
+test("keeps a canceled reservation closed for good", () => {
+  // Регрессия: панель персонала показывала «Подтвердить» у отменённой брони.
+  for (const target of ["PENDING", "CONFIRMED", "SEATED", "NO_SHOW"] as const) {
+    assert.equal(canTransitionReservation("CANCELED", target), false);
+  }
+  assert.equal(canTransitionReservation("NO_SHOW", "CONFIRMED"), false);
+  assert.equal(isReservationFinal("CANCELED"), true);
+  assert.equal(isReservationFinal("NO_SHOW"), true);
+  assert.equal(isReservationFinal("PENDING"), false);
+});
+
+test("allows only valid preorder status transitions", () => {
+  assert.equal(canTransitionPreorder("NEW", "CONFIRMED"), true);
+  assert.equal(canTransitionPreorder("CONFIRMED", "IN_KITCHEN"), true);
+  assert.equal(canTransitionPreorder("IN_KITCHEN", "READY"), true);
+  // На кухне блюда уже готовятся: отмена только через персонал вручную.
+  assert.equal(canTransitionPreorder("IN_KITCHEN", "CANCELED"), false);
+  assert.equal(canTransitionPreorder("CANCELED", "CONFIRMED"), false);
+  assert.equal(isPreorderFinal("READY"), true);
+  assert.equal(isPreorderFinal("CANCELED"), true);
 });
 
 test("normalizes a Russian phone with visual separators", () => {

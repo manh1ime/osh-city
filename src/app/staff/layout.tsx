@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { logoutAction } from "@/actions/auth";
 import { Logo } from "@/components/brand/Logo";
+import { NotificationCenter } from "@/components/staff/NotificationCenter";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { roleLabel } from "@/lib/permissions";
@@ -71,6 +72,8 @@ export default async function StaffLayout({
             >
               Моя сводка
             </Link>
+            {/* Колокольчик рядом с выходом: виден на любой странице панели. */}
+            <NotificationCenter />
             <form action={logoutAction}>
               <button
                 type="submit"

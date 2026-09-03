@@ -7,7 +7,6 @@ import { cookies } from "next/headers";
 import { writeAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { preorderTransitions } from "@/lib/preorders";
 import { getRestaurant } from "@/lib/restaurant";
 import { ensureBranches } from "@/lib/branches";
 import {
@@ -28,17 +27,10 @@ import {
   reservationStatusSchema,
   normalizeRussianPhone,
 } from "@/lib/validation";
-
-const RESERVATION_TRANSITIONS: Record<
-  "PENDING" | "CONFIRMED" | "SEATED" | "CANCELED" | "NO_SHOW",
-  Array<"PENDING" | "CONFIRMED" | "SEATED" | "CANCELED" | "NO_SHOW">
-> = {
-  PENDING: ["CONFIRMED", "SEATED", "CANCELED", "NO_SHOW"],
-  CONFIRMED: ["SEATED", "CANCELED", "NO_SHOW"],
-  SEATED: ["NO_SHOW"],
-  CANCELED: [],
-  NO_SHOW: [],
-};
+import {
+  canTransitionPreorder,
+  canTransitionReservation,
+} from "@/lib/reservation-status";
 
 /**
  * Ошибка внутри server action роняет всю страницу на «Application error».
@@ -106,8 +98,23 @@ async function setReservationPreorderStatus(
     return { ok: false, error: "Этот предзаказ другого филиала" };
   }
   const parsedStatus = nextStatus as ReservationPreorderStatus;
-  if (!preorderTransitions[preorder.status].includes(parsedStatus)) {
+  if (!canTransitionPreorder(preorder.status, parsedStatus)) {
     return { ok: false, error: "Недопустимая смена статуса предзаказа" };
+  }
+  // Бронь отменена или гости не пришли: предзаказ по ней уже не готовим.
+  if (
+    preorder.reservation.status === "CANCELED" ||
+    preorder.reservation.status === "NO_SHOW"
+  ) {
+    if (nextStatus !== "CANCELED") {
+      return {
+        ok: false,
+        error:
+          preorder.reservation.status === "CANCELED"
+            ? "Бронь отменена: предзаказ можно только отменить"
+            : "Гости не пришли: предзаказ можно только отменить",
+      };
+    }
   }
   if (
     nextStatus === ReservationPreorderStatus.IN_KITCHEN &&
@@ -411,8 +418,16 @@ async function setReservationStatus(
   });
   if (!reservation) return { ok: false, error: "Бронь не найдена" };
 
-  if (!RESERVATION_TRANSITIONS[reservation.status].includes(status)) {
-    return { ok: false, error: "Недопустимая смена статуса брони" };
+  if (!canTransitionReservation(reservation.status, status)) {
+    return {
+      ok: false,
+      error:
+        reservation.status === "CANCELED"
+          ? "Бронь отменена, её больше нельзя изменить"
+          : reservation.status === "NO_SHOW"
+            ? "Бронь закрыта как «гости не пришли»"
+            : "Недопустимая смена статуса брони",
+    };
   }
 
   if (

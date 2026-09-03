@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { logoutManagerAction } from "@/actions/auth";
 import { Logo } from "@/components/brand/Logo";
+import { NotificationCenter } from "@/components/staff/NotificationCenter";
 
 type Role = "WAITER" | "MANAGER";
 const NAV: Array<{ href: string; label: string; roles: Role[] }> = [
@@ -125,6 +126,7 @@ export function ManagerShell({
                   {isOrderingEnabled ? "Заказы принимаются" : "Заказы отключены"}
                 </span>
               </span>
+              <NotificationCenter />
               <form action={logoutManagerAction}>
                 <button type="submit" className="btn-ghost btn-sm">
                   Выйти

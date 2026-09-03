@@ -318,7 +318,11 @@ export function GuestMenu({
         return;
       }
       setCallState("sent");
-      setCallMessage("Официант уведомлен и скоро подойдет");
+      setCallMessage(
+        type === "BILL"
+          ? "Официант получил просьбу принести счёт"
+          : "Официант уведомлен и скоро подойдет",
+      );
       setTimeout(() => setCallState("idle"), 8000);
     } catch {
       setCallState("error");
@@ -369,16 +373,28 @@ export function GuestMenu({
               {reservation ? "Моя бронь" : "Мои заказы"}
             </Link> : null}
             {!viewOnly && !reservation ? (
-              <button
-                type="button"
-                onClick={() => callWaiter("WAITER")}
-                disabled={callState === "sending"}
-                className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 text-sm font-medium text-ink-700 transition hover:bg-cream-100 disabled:opacity-50 sm:flex-none"
-              >
-                {callState === "sending"
-                  ? "Отправляем..."
-                  : "Позвать официанта"}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => callWaiter("WAITER")}
+                  disabled={callState === "sending"}
+                  className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 text-sm font-medium text-ink-700 transition hover:bg-cream-100 disabled:opacity-50 sm:flex-none"
+                >
+                  {callState === "sending"
+                    ? "Отправляем..."
+                    : "Позвать официанта"}
+                </button>
+                {/* Тип BILL существовал в схеме и в панели официанта, но гость
+                    не мог его отправить: кнопки счёта в меню не было. */}
+                <button
+                  type="button"
+                  onClick={() => callWaiter("BILL")}
+                  disabled={callState === "sending"}
+                  className="min-h-10 flex-1 rounded-lg border border-cream-300 bg-white px-3.5 text-sm font-medium text-ink-700 transition hover:bg-cream-100 disabled:opacity-50 sm:flex-none"
+                >
+                  Счёт
+                </button>
+              </>
             ) : null}
           </div>
         </div>

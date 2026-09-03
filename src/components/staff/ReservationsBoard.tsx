@@ -5,6 +5,11 @@ import { useEffect, useState, useTransition } from "react";
 import { setReservationStatusAction } from "@/actions/reservations";
 import { setReservationPreorderStatusAction } from "@/actions/reservations";
 import { preorderStatusLabel } from "@/lib/format";
+import {
+  canTransitionPreorder,
+  canTransitionReservation,
+  isReservationFinal,
+} from "@/lib/reservation-status";
 
 export type StaffReservationDto = {
   id: string;
@@ -128,7 +133,11 @@ export function ReservationsBoard({
         </p>
       ) : null}
 
-      {reservations.map((item) => (
+      {reservations.map((item) => {
+        // Кнопки строим из той же таблицы переходов, что и сервер: у отменённой
+        // брони действий нет, поэтому «Подтвердить» больше не появляется.
+        const closed = isReservationFinal(item.status);
+        return (
         <article
           key={item.id}
           className="rounded-2xl border border-white/10 bg-white/5 p-5"
@@ -177,7 +186,14 @@ export function ReservationsBoard({
             </p>
           ) : null}
 
-          {item.preorders.map((preorder) => (
+          {item.preorders.map((preorder) => {
+            // Отменённая бронь: предзаказ по ней можно только отменить.
+            const preorderLocked =
+              item.status === "CANCELED" || item.status === "NO_SHOW";
+            const canPreorder = (next: typeof preorder.status) =>
+              canTransitionPreorder(preorder.status, next) &&
+              (!preorderLocked || next === "CANCELED");
+            return (
             <section
               key={preorder.id}
               className="mt-4 rounded-xl border border-[#B7833E]/25 bg-[#B7833E]/10 p-4"
@@ -206,8 +222,9 @@ export function ReservationsBoard({
                 ))}
               </ul>
               {canManage ? <div className="mt-3 flex flex-wrap gap-2">
-                {preorder.status === "NEW" ? (
+                {canPreorder("CONFIRMED") ? (
                   <button
+                    type="button"
                     disabled={isPending}
                     onClick={() => setPreorderStatus(preorder.id, "CONFIRMED")}
                     className="btn btn-primary btn-sm"
@@ -215,8 +232,9 @@ export function ReservationsBoard({
                     Принять
                   </button>
                 ) : null}
-                {preorder.status === "CONFIRMED" ? (
+                {canPreorder("IN_KITCHEN") ? (
                   <button
+                    type="button"
                     disabled={isPending}
                     onClick={() => setPreorderStatus(preorder.id, "IN_KITCHEN")}
                     className="btn btn-primary btn-sm"
@@ -224,8 +242,9 @@ export function ReservationsBoard({
                     На кухню
                   </button>
                 ) : null}
-                {preorder.status === "IN_KITCHEN" ? (
+                {canPreorder("READY") ? (
                   <button
+                    type="button"
                     disabled={isPending}
                     onClick={() => setPreorderStatus(preorder.id, "READY")}
                     className="btn btn-primary btn-sm"
@@ -233,11 +252,19 @@ export function ReservationsBoard({
                     Готово
                   </button>
                 ) : null}
-                {preorder.status === "NEW" ||
-                preorder.status === "CONFIRMED" ? (
+                {canPreorder("CANCELED") ? (
                   <button
+                    type="button"
                     disabled={isPending}
-                    onClick={() => setPreorderStatus(preorder.id, "CANCELED")}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Отменить предзаказ № ${preorder.preorderNumber}?`,
+                        )
+                      ) {
+                        setPreorderStatus(preorder.id, "CANCELED");
+                      }
+                    }}
                     className="btn btn-sm border border-red-400/30 text-red-200"
                   >
                     Отменить
@@ -245,10 +272,11 @@ export function ReservationsBoard({
                 ) : null}
               </div> : null}
             </section>
-          ))}
+            );
+          })}
 
-          {canManage ? <div className="mt-4 flex flex-wrap gap-2">
-            {item.status !== "CONFIRMED" && item.status !== "SEATED" ? (
+          {canManage && !closed ? <div className="mt-4 flex flex-wrap gap-2">
+            {canTransitionReservation(item.status, "CONFIRMED") ? (
               <button
                 type="button"
                 disabled={isPending}
@@ -258,7 +286,7 @@ export function ReservationsBoard({
                 Подтвердить
               </button>
             ) : null}
-            {item.status !== "SEATED" ? (
+            {canTransitionReservation(item.status, "SEATED") ? (
               <button
                 type="button"
                 disabled={isPending}
@@ -268,29 +296,50 @@ export function ReservationsBoard({
                 Гости за столом
               </button>
             ) : null}
-            {item.status !== "NO_SHOW" ? (
+            {canTransitionReservation(item.status, "NO_SHOW") ? (
               <button
                 type="button"
                 disabled={isPending}
-                onClick={() => setStatus(item.id, "NO_SHOW")}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Отметить бронь ${item.code}: гости не пришли?`,
+                    )
+                  ) {
+                    setStatus(item.id, "NO_SHOW");
+                  }
+                }}
                 className="btn btn-sm border border-white/20 text-white/70 hover:bg-white/10"
               >
                 Не пришли
               </button>
             ) : null}
-            {item.status !== "CANCELED" ? (
+            {canTransitionReservation(item.status, "CANCELED") ? (
               <button
                 type="button"
                 disabled={isPending}
-                onClick={() => setStatus(item.id, "CANCELED")}
+                onClick={() => {
+                  if (window.confirm(`Отменить бронь ${item.code}?`)) {
+                    setStatus(item.id, "CANCELED");
+                  }
+                }}
                 className="btn btn-sm border border-red-400/30 text-red-200 hover:bg-red-400/10"
               >
                 Отменить
               </button>
             ) : null}
           </div> : null}
+
+          {canManage && closed ? (
+            <p className="mt-4 rounded-lg bg-white/5 px-3 py-2 text-xs text-white/45">
+              {item.status === "CANCELED"
+                ? "Бронь отменена, действий по ней больше нет."
+                : "Бронь закрыта: гости не пришли."}
+            </p>
+          ) : null}
         </article>
-      ))}
+        );
+      })}
     </div>
   );
 }

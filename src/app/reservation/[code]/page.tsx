@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { GUEST_PHONE_COOKIE } from "@/lib/session-token";
 import { normalizeRussianPhone } from "@/lib/validation";
 import { preorderStatusLabel, reservationStatusLabel } from "@/lib/format";
+import { canTransitionReservation } from "@/lib/reservation-status";
 import {
   formatReservationDate,
   formatReservationTime,
@@ -46,7 +47,7 @@ export default async function ReservationPage({
 
   const canCancel =
     reservation.reservedAt.getTime() > Date.now() &&
-    (reservation.status === "PENDING" || reservation.status === "CONFIRMED");
+    canTransitionReservation(reservation.status, "CANCELED");
 
   return (
     <div className="guest-theme min-h-screen bg-[#121514] px-4 py-12 text-ink-900 sm:px-6">

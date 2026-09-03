@@ -129,6 +129,10 @@ export async function createReservationPreorder(
   return { ok: false, error: "Не удалось отправить предзаказ" };
 }
 
+/**
+ * Переходы предзаказа. Единый источник — src/lib/reservation-status.ts,
+ * здесь оставлен алиас на типах Prisma для существующих импортов.
+ */
 export const preorderTransitions: Record<
   ReservationPreorderStatus,
   ReservationPreorderStatus[]

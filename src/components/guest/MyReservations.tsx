@@ -9,6 +9,7 @@ import {
 } from "@/actions/reservations";
 import { Logo } from "@/components/brand/Logo";
 import { preorderStatusLabel } from "@/lib/format";
+import { canTransitionReservation } from "@/lib/reservation-status";
 
 export type GuestReservationDto = {
   id: string;
@@ -206,11 +207,11 @@ function ReservationCard({
   onCancel?: (code: string) => void;
   disabled?: boolean;
 }) {
+  // Тот же список переходов, что и на сервере: у отменённой брони
+  // не должно оставаться ни «Отменить», ни «Заказать блюда».
   const canCancel =
     !reservation.isPast &&
-    reservation.status !== "CANCELED" &&
-    reservation.status !== "SEATED" &&
-    reservation.status !== "NO_SHOW";
+    canTransitionReservation(reservation.status, "CANCELED");
 
   return (
     <article className="guest-menu-card rounded-2xl p-5">
