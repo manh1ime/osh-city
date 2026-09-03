@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { redirectToPath } from "@/lib/http";
 import {
   GUEST_COOKIE,
   MANAGER_SESSION_COOKIE,
@@ -43,17 +44,17 @@ export async function middleware(request: NextRequest) {
   // если cookie существует, но серверная проверка сессии больше не проходит.
   if (isLoginPage) return response;
 
+  // Редиректы строго относительные: на Netlify `request.url` содержит
+  // внутренний адрес деплоя, и абсолютный Location уводил браузер на другой
+  // хост, где host-only cookie сессии уже не отправляется.
   if (!session) {
-    const loginUrl = new URL(
-      isManagerArea ? "/manager/login" : "/staff/login",
-      request.url,
-    );
-    loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
+    const search = new URLSearchParams({ next: pathname }).toString();
+    const loginPath = isManagerArea ? "/manager/login" : "/staff/login";
+    return redirectToPath(`${loginPath}?${search}`, 307);
   }
 
   if (isManagerArea && session.role !== "MANAGER") {
-    return NextResponse.redirect(new URL("/staff/orders", request.url));
+    return redirectToPath("/staff/orders", 307);
   }
 
   return response;

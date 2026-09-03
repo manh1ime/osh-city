@@ -29,7 +29,11 @@ body {
 body {
   @apply bg-cream-100 text-ink-900 font-sans antialiased;
   -webkit-tap-highlight-color: transparent;
+  /* Панели персонала и менеджера не должны прокручиваться вбок на телефоне:
+     любой выехавший элемент лучше обрезать, чем ломать всю страницу. */
+  overflow-x: hidden;
 }
+
 ::selection {
   background: #cad8ce;
   color: #1b3124;

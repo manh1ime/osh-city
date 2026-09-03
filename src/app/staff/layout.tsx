@@ -72,6 +72,12 @@ export default async function StaffLayout({
             >
               Моя сводка
             </Link>
+            <Link
+              href="/staff/notifications"
+              className="rounded-lg px-3 py-2 text-ink-600 hover:bg-cream-100"
+            >
+              Уведомления
+            </Link>
             {/* Колокольчик рядом с выходом: виден на любой странице панели. */}
             <NotificationCenter />
             <form action={logoutAction}>

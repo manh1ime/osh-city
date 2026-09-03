@@ -31,6 +31,7 @@ import {
   canTransitionPreorder,
   canTransitionReservation,
 } from "@/lib/reservation-status";
+import { pushNewReservation, pushPreorderReady } from "@/lib/push-events";
 
 /**
  * Ошибка внутри server action роняет всю страницу на «Application error».
@@ -146,6 +147,8 @@ async function setReservationPreorderStatus(
     entityId: preorder.id,
     metadata: { from: preorder.status, to: nextStatus },
   });
+  // Готовое блюдо нужно подать сразу, поэтому сообщаем на телефон.
+  if (nextStatus === "READY") await pushPreorderReady(preorder.id);
   revalidatePath("/staff/reservations");
   revalidatePath(`/reservation/${preorder.reservation.code}`);
   return { ok: true };
@@ -259,7 +262,7 @@ export async function createReservationAction(
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = generateReservationCode();
     try {
-      await prisma.reservation.create({
+      const created = await prisma.reservation.create({
         data: {
           restaurantId: restaurant.id,
           branchId: branch.id,
@@ -271,9 +274,12 @@ export async function createReservationAction(
           reservedAt,
           assignedToId: seniorWaiter?.id ?? null,
         },
+        select: { id: true },
       });
 
       await rememberGuestPhone(input.phone);
+      // Старший официант узнаёт о брони сразу, а не при следующем открытии панели.
+      await pushNewReservation(created.id);
       revalidatePath("/");
       revalidatePath("/my-reservations");
       revalidatePath("/staff/reservations");

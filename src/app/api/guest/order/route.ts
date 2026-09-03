@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createGuestOrder } from "@/lib/orders";
+import { pushNewOrder } from "@/lib/push-events";
 import { GUEST_COOKIE } from "@/lib/session-token";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function clientIp(request: NextRequest): string | null {
@@ -40,6 +42,10 @@ export async function POST(request: NextRequest) {
           : 400;
     return NextResponse.json({ ok: false, error: result.error }, { status });
   }
+
+  // Официант должен узнать о заказе, даже если панель закрыта.
+  // Ждём отправку: на serverless функция завершается сразу после ответа.
+  if (result.orderId) await pushNewOrder(result.orderId);
 
   const response = NextResponse.json({
     ok: true,

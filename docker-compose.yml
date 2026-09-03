@@ -19,6 +19,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Публичные переменные Next.js вшиваются в бандл на этапе сборки.
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-}
     container_name: uchkuduk_app
     restart: unless-stopped
     depends_on:
@@ -32,6 +36,11 @@ services:
       HASH_SALT: ${HASH_SALT:?Set HASH_SALT in .env.production}
       RESTAURANT_SLUG: ${RESTAURANT_SLUG:-uchkuduk}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?Set NEXT_PUBLIC_APP_URL in .env.production}
+      # Web Push. Без этих ключей панель работает, но уведомления
+      # приходят только в открытую вкладку, а не на телефон сотрудника.
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@uchkuduk.ru}
     command: ["sh", "/app/docker-entrypoint.sh"]
     ports:
       - "127.0.0.1:${APP_PORT:-3000}:3000"

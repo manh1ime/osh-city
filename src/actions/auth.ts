@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { loginWithPassword, logout } from "@/lib/auth";
+import { safeInternalPath } from "@/lib/http";
 import { canAccessManager } from "@/lib/permissions";
 import { firstZodError, loginSchema } from "@/lib/validation";
 
@@ -10,14 +11,6 @@ export type LoginResult = {
   error?: string;
   redirectTo?: string;
 };
-
-function safeNext(next: string | null, fallback: string): string {
-  // Защита от open redirect: разрешаем только внутренние пути
-  if (!next) return fallback;
-  if (!next.startsWith("/") || next.startsWith("//")) return fallback;
-  if (next === "/staff/login" || next === "/manager/login") return fallback;
-  return next;
-}
 
 /**
  * Вход сотрудника (панель персонала и панель менеджера используют одну и ту же форму).
@@ -54,13 +47,8 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     return { ok: true, redirectTo: "/staff/orders" };
   }
 
-  const fallback =
-    area === "manager"
-      ? "/manager"
-      : role === "WAITER"
-        ? "/staff/orders"
-        : "/staff/orders";
-  return { ok: true, redirectTo: safeNext(next, fallback) };
+  const fallback = area === "manager" ? "/manager" : "/staff/orders";
+  return { ok: true, redirectTo: safeInternalPath(next, fallback) };
 }
 
 /** Выход: используется напрямую в <form action={logoutAction}>. */

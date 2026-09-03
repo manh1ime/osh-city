@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { writeAudit, writeSecurityEvent } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import { pushNewCall } from "@/lib/push-events";
 import { checkWaiterCallRateLimit } from "@/lib/rate-limit";
 import { getRestaurant, getSecuritySettings } from "@/lib/restaurant";
 import { GUEST_COOKIE } from "@/lib/session-token";
 import { firstZodError, waiterCallSchema } from "@/lib/validation";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** Гость зовет официанта со своего стола. */
@@ -79,6 +81,9 @@ export async function POST(request: NextRequest) {
     entityId: call.id,
     metadata: { table: table.number, type: parsed.data.type },
   });
+
+  // Вызов бесполезен, если официант увидит его через несколько минут.
+  await pushNewCall(call.id);
 
   const response = NextResponse.json({ ok: true, callId: call.id });
   if (!existingGuestSession) {

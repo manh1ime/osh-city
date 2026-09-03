@@ -9,6 +9,13 @@ RUN npm ci
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* подставляются в клиентский бандл во время сборки, а не запуска.
+# Без build arg публичный ключ VAPID не попадёт в браузер и подписка на push
+# завершится ошибкой «ключи не настроены».
+ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
+ARG NEXT_PUBLIC_APP_URL=""
+ENV NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openssl \
     && rm -rf /var/lib/apt/lists/*

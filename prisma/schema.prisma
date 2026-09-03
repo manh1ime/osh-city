@@ -33,6 +33,7 @@ model Restaurant {
   staff                StaffUser[]
   tables               Table[]
   waiterCalls          WaiterCall[]
+  pushDevices          PushDevice[]
 }
 
 model SecuritySetting {
@@ -185,9 +186,34 @@ model StaffUser {
   branch         Branch?       @relation(fields: [branchId], references: [id])
   restaurant     Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   closedCalls    WaiterCall[]
+  pushDevices    PushDevice[]
 
   @@index([restaurantId])
   @@index([branchId, isActive])
+}
+
+/// Устройство сотрудника, подписанное на Web Push.
+/// Ключи выдаёт браузер: без них система push не доставит сообщение.
+/// Одно устройство = одна запись; сотрудник может работать с телефона и планшета.
+model PushDevice {
+  id           String     @id @default(cuid())
+  restaurantId String
+  userId       String
+  /// Уникальный адрес устройства в push-сервисе Google/Apple/Mozilla.
+  endpoint     String     @unique
+  p256dh       String
+  auth         String
+  userAgent    String?
+  createdAt    DateTime   @default(now())
+  lastUsedAt   DateTime?
+  /// Счётчик отказов: после 410/404 подписку удаляем сразу,
+  /// временные сбои сети не должны отключать устройство.
+  failureCount Int        @default(0)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user         StaffUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([restaurantId])
 }
 
 model WaiterCall {
