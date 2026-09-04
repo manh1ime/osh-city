@@ -484,11 +484,14 @@ export function NotificationCenter() {
           unseenCount > 0 ? `Уведомления: ${unseenCount} новых` : "Уведомления"
         }
         aria-expanded={open}
-        className={`relative flex h-10 min-w-10 shrink-0 items-center justify-center rounded-lg border px-2.5 text-sm font-semibold transition ${
-          urgentCount > 0
-            ? "border-red-400/50 bg-red-500/15 text-red-100"
-            : "border-cream-300 text-ink-600"
-        }`}
+         title={unseenCount > 0 ? `${unseenCount} новых уведомлений` : "Уведомления"}
+         className={`notification-trigger relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-sm font-semibold transition ${
+           urgentCount > 0
+             ? "notification-trigger-urgent border-red-400/50 bg-red-500/15 text-red-100"
+             : open
+               ? "notification-trigger-open border-wine-500/50 bg-wine-50 text-wine-700"
+               : "border-cream-300 text-ink-600"
+         }`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

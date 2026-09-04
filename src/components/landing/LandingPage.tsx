@@ -161,11 +161,7 @@ export function LandingPage({ restaurant, branches }: Props) {
             {restaurant.description ??
               "Домашняя восточная кухня, тандыр, чай и спокойный зал. Забронируйте стол за минуту, мы встретим вас в нужное время."}
           </p>
-          <div className="eastern-night-rating" aria-label="Оценка кафе 4,4 из 5">
-            <strong>4,4</strong>
-            <span>оценка гостей</span>
-          </div>
-          <div className="mt-8 flex flex-wrap gap-3">
+           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#booking" className="btn btn-primary min-h-11">
               Забронировать стол
             </a>
@@ -173,7 +169,7 @@ export function LandingPage({ restaurant, branches }: Props) {
               href="#branches"
               className="btn min-h-11 border border-white/20 text-white hover:bg-white/10"
             >
-              Наши филиалы
+              Режим работы
             </a>
           </div>
         </div>
@@ -193,14 +189,28 @@ export function LandingPage({ restaurant, branches }: Props) {
         </svg>
       </div>
 
-      {/* Режим работы */}
-      <section id="branches" className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
-        <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">
-          Филиалы
-        </p>
-        <h2 className="guest-display mt-2 text-2xl font-semibold text-white">
-          Работаем круглосуточно
-        </h2>
+       {/* Режим работы */}
+       <section id="branches" className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
+         <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">
+           Режим работы
+         </p>
+         <div className="mt-5 grid gap-4 sm:grid-cols-2">
+           {branches.map((item) => (
+             <div key={item.id} className="guest-menu-card rounded-xl p-5">
+               <h2 className="guest-display text-xl font-semibold text-white">
+                 {item.name}
+               </h2>
+               <p className="mt-2 text-sm text-white/60">{item.address}</p>
+               <p className="mt-4 text-sm font-medium text-[#E0B472]">
+                 {item.slug === "vasilievsky"
+                   ? "Круглосуточно"
+                   : item.slug === "sadovaya"
+                     ? "Ежедневно до 02:00"
+                     : workingHoursLabel(item.openTime, item.closeTime)}
+               </p>
+             </div>
+           ))}
+         </div>
       </section>
 
       {/* Мы на картах */}
@@ -488,7 +498,11 @@ export function LandingPage({ restaurant, branches }: Props) {
           <ul className="mt-2 space-y-1">
             {branches.map((item) => (
               <li key={item.id}>
-                {item.address}, ежедневно {item.openTime} до {item.closeTime}
+                 {item.address} · {item.slug === "vasilievsky"
+                   ? "круглосуточно"
+                   : item.slug === "sadovaya"
+                     ? "ежедневно до 02:00"
+                     : workingHoursLabel(item.openTime, item.closeTime)}
               </li>
             ))}
           </ul>

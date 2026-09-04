@@ -142,6 +142,41 @@ body:has(a[href^="/manager/"]) .btn-ghost {
   color: var(--panel-muted) !important;
 }
 
+/* Общий триггер центра уведомлений в обеих панелях. */
+.staff-theme .notification-trigger,
+.eastern-night-manager-panel .notification-trigger,
+body:has(a[href^="/manager/"]) .notification-trigger {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: var(--panel-line) !important;
+  background: rgba(255,255,255,.045) !important;
+  color: var(--panel-text) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+}
+.staff-theme .notification-trigger:hover,
+.eastern-night-manager-panel .notification-trigger:hover,
+body:has(a[href^="/manager/"]) .notification-trigger:hover {
+  border-color: rgba(215,170,80,.55) !important;
+  background: var(--panel-surface-2) !important;
+  color: var(--panel-gold-light) !important;
+  transform: translateY(-1px);
+}
+.staff-theme .notification-trigger-open,
+.eastern-night-manager-panel .notification-trigger-open,
+body:has(a[href^="/manager/"]) .notification-trigger-open {
+  border-color: var(--panel-gold) !important;
+  background: rgba(215,170,80,.14) !important;
+  color: var(--panel-gold-light) !important;
+}
+.staff-theme .notification-trigger-urgent,
+.eastern-night-manager-panel .notification-trigger-urgent,
+body:has(a[href^="/manager/"]) .notification-trigger-urgent {
+  border-color: rgba(232,133,143,.7) !important;
+  background: rgba(180,45,62,.24) !important;
+  color: #ffd8d8 !important;
+  box-shadow: 0 0 0 3px rgba(232,133,143,.08), 0 8px 22px rgba(180,45,62,.2);
+}
+
 /* Менеджер: навигация и рабочая область */
 .eastern-night-manager-panel header,
 .eastern-night-manager-panel aside,
