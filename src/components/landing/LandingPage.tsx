@@ -74,10 +74,15 @@ export function LandingPage({ restaurant, branch }: Props) {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isPending) return;
+    if (!branch) {
+      setError("Филиал временно недоступен. Попробуйте позже.");
+      return;
+    }
     setError(null);
     setIsPending(true);
 
     const formData = new FormData();
+    formData.set("branchSlug", branch.slug);
     formData.set("name", name);
     formData.set("phone", phone);
     formData.set("date", date);
