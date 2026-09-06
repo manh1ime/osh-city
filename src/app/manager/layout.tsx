@@ -12,7 +12,7 @@ export default async function ManagerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = (await headers()).get("x-uchkuduk-pathname");
+  const pathname = (await headers()).get("x-osh-city-pathname");
   if (pathname === "/manager/login") return <>{children}</>;
   const session = await getSession("manager");
 

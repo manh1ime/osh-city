@@ -1,4 +1,4 @@
-# Развертывание «Учкудук» на Timeweb Cloud VPS
+# Развертывание «Ош-Сити» на Timeweb Cloud VPS
 
 Инструкция рассчитана на чистый VPS с Ubuntu 24.04, публичным IPv4 и доменом.
 Текущий Netlify/Neon не изменяется до завершения проверки на VPS.
@@ -21,7 +21,7 @@ sudo usermod -aG docker "$USER"
 ```bash
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
+sudo ufw allow 443/tcpclear
 sudo ufw enable
 ```
 
@@ -30,9 +30,9 @@ sudo ufw enable
 ## 2. Загрузить проект
 
 ```bash
-sudo mkdir -p /opt/uchkuduk
-sudo chown "$USER":"$USER" /opt/uchkuduk
-cd /opt/uchkuduk
+sudo mkdir -p /opt/osh-city
+sudo chown "$USER":"$USER" /opt/osh-city
+cd /opt/osh-city
 git clone YOUR_REPOSITORY_URL .
 ```
 
@@ -121,8 +121,8 @@ your-domain.ru {
 Создать каталог вне Git:
 
 ```bash
-sudo mkdir -p /var/backups/uchkuduk
-sudo chmod 700 /var/backups/uchkuduk
+sudo mkdir -p /var/backups/osh-city
+sudo chmod 700 /var/backups/osh-city
 ```
 
 Создать backup:
@@ -130,7 +130,7 @@ sudo chmod 700 /var/backups/uchkuduk
 ```bash
 docker compose --env-file .env.production exec -T db \
   sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc --no-owner --no-privileges' \
-  > "/var/backups/uchkuduk/uchkuduk-$(date +%Y%m%d-%H%M%S).dump"
+  > "/var/backups/osh-city/osh-city-$(date +%Y%m%d-%H%M%S).dump"
 ```
 
 Команду выполнять из shell, где загружены значения `.env.production`, либо заменить значения на свои. Одну копию обязательно отправлять за пределы VPS.
@@ -139,7 +139,7 @@ docker compose --env-file .env.production exec -T db \
 
 ```bash
 docker compose --env-file .env.production exec -T db \
-  pg_restore --list < /var/backups/uchkuduk/FILE.dump
+  pg_restore --list < /var/backups/osh-city/FILE.dump
 ```
 
 Периодически проверять восстановление в отдельную тестовую базу. Backup на том же диске не считается единственной защитой.
@@ -147,7 +147,7 @@ docker compose --env-file .env.production exec -T db \
 ## 8. Обновление приложения
 
 ```bash
-cd /opt/uchkuduk
+cd /opt/osh-city
 git pull --ff-only
 docker compose --env-file .env.production up -d --build
 docker compose --env-file .env.production logs --tail=100 app

@@ -19,7 +19,7 @@ export async function saveSettingsAction(
     return { ok: false, error: "Ресторан не найден" };
   }
 
-  // Цвет и валюта закреплены в конфигурации «Учкудука» и не принимаются
+  // Цвет и валюта закреплены в конфигурации «Ош-Ситиа» и не принимаются
   // из формы, поэтому их нельзя изменить подменой запроса.
   const parsed = settingsSchema.safeParse({
     ...Object.fromEntries(formData.entries()),
@@ -38,7 +38,7 @@ export async function saveSettingsAction(
       name: input.name,
       description: input.description || null,
       address: input.address || null,
-      logoUrl: "/images/uchkuduk-logo.webp",
+      logoUrl: "/images/osh-city-logo.webp",
       coverImageUrl: input.coverImageUrl || null,
       isOrderingEnabled: input.isOrderingEnabled,
     },

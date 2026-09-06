@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { redirectToPath } from "@/lib/http";
 import {
   GUEST_COOKIE,
   MANAGER_SESSION_COOKIE,
@@ -11,7 +10,7 @@ import {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-uchkuduk-pathname", pathname);
+  requestHeaders.set("x-osh-city-pathname", pathname);
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
@@ -50,11 +49,14 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     const search = new URLSearchParams({ next: pathname }).toString();
     const loginPath = isManagerArea ? "/manager/login" : "/staff/login";
-    return redirectToPath(`${loginPath}?${search}`, 307);
+    return NextResponse.redirect(
+      new URL(`${loginPath}?${search}`, request.url),
+      307,
+    );
   }
 
   if (isManagerArea && session.role !== "MANAGER") {
-    return redirectToPath("/staff/orders", 307);
+    return NextResponse.redirect(new URL("/staff/orders", request.url), 307);
   }
 
   return response;

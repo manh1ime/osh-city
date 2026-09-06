@@ -385,7 +385,7 @@ export function OrdersBoard({
                         № {order.orderNumber} · Стол {order.tableNumber}
                       </p>
                       <p className="text-xs text-ink-400">
-                        {order.branchName} · {order.tableZone ?? "-"} · {stableTimerLabel(seconds, now !== 0)} назад
+                        {order.tableZone ?? "-"} · {stableTimerLabel(seconds, now !== 0)} назад
                       </p>
                     </div>
                     <span className="rounded-md bg-cream-100 px-3 py-1 text-[11px] font-semibold text-cream-200">

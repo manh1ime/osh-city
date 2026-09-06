@@ -4,7 +4,7 @@ import { prisma } from "./db";
  * Система работает для ОДНОГО ресторана (single-tenant),
  * но все запросы уже идут с restaurantId: мультиарендность включается без переписывания логики.
  */
-export const RESTAURANT_SLUG = process.env.RESTAURANT_SLUG ?? "uchkuduk";
+export const RESTAURANT_SLUG = process.env.RESTAURANT_SLUG ?? "osh-city";
 
 export async function getRestaurant() {
   const restaurant =

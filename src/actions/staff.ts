@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { writeAudit } from "@/lib/audit";
 import { hashPassword, requireRole } from "@/lib/auth";
+import { getPrimaryBranchId } from "@/lib/branches";
 import { prisma } from "@/lib/db";
 import { firstZodError, staffSchema } from "@/lib/validation";
 
@@ -34,19 +35,18 @@ export async function saveStaffAction(
     return { ok: false, error: "Сотрудник с таким email уже есть" };
   }
 
-  // Филиал должен принадлежать тому же ресторану, что и менеджер.
-  const branchId = input.branchId ?? null;
+  // Филиал один — автоматически назначаем его всем сотрудникам.
+  // Менеджеру филиал не нужен (видит все столы), но привязка не мешает.
+  let branchId = input.branchId ?? null;
+  if (!branchId && input.role !== "MANAGER") {
+    branchId = await getPrimaryBranchId(session.restaurantId);
+  }
   if (branchId) {
     const branch = await prisma.branch.findFirst({
       where: { id: branchId, restaurantId: session.restaurantId },
       select: { id: true },
     });
     if (!branch) return { ok: false, error: "Филиал не найден" };
-  }
-  // Официант и старший официант всегда работают в конкретном филиале:
-  // без него брони некуда маршрутизировать.
-  if (input.role !== "MANAGER" && !branchId) {
-    return { ok: false, error: "Выберите филиал для официанта" };
   }
 
   if (input.id) {

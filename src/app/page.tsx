@@ -1,16 +1,17 @@
 import { getRestaurant } from "@/lib/restaurant";
-import { getActiveBranches } from "@/lib/branches";
+import { getPrimaryBranch } from "@/lib/branches";
 import { LandingPage } from "@/components/landing/LandingPage";
 
 /**
- * Публичный лендинг: коротко о кафе, выбор филиала и бронирование стола.
+ * Публичный лендинг: коротко о кафе и бронирование стола.
+ * Филиал ровно один, поэтому выбора филиала на странице нет.
  * Сотрудники по-прежнему входят через /staff/login и /manager/login.
  */
 export const dynamic = "force-dynamic";
 
 export default async function RootPage() {
   const restaurant = await getRestaurant();
-  const branches = await getActiveBranches(restaurant.id);
+  const branch = await getPrimaryBranch(restaurant.id);
 
   return (
     <LandingPage
@@ -19,7 +20,7 @@ export default async function RootPage() {
         description: restaurant.description,
         coverImageUrl: restaurant.coverImageUrl,
       }}
-      branches={branches}
+      branch={branch}
     />
   );
 }

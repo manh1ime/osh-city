@@ -10,17 +10,9 @@ export type StaffRow = {
   name: string;
   email: string;
   role: "WAITER" | "SENIOR_WAITER" | "MANAGER";
-  branchId: string | null;
   isNightShift: boolean;
   isActive: boolean;
   lastLoginAt: string | null;
-};
-
-/** Филиалы кафе для выбора места работы сотрудника. */
-export type StaffBranchOption = {
-  id: string;
-  name: string;
-  address: string;
 };
 
 const ROLE_LABEL: Record<StaffRow["role"], string> = {
@@ -31,11 +23,9 @@ const ROLE_LABEL: Record<StaffRow["role"], string> = {
 
 export function StaffManager({
   staff,
-  branches = [],
   currentUserId,
 }: {
   staff: StaffRow[];
-  branches?: StaffBranchOption[];
   currentUserId: string;
 }) {
   const router = useRouter();
@@ -72,8 +62,7 @@ export function StaffManager({
         <div>
           <h1 className="font-display text-3xl text-ink-900">Сотрудники</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Каждый официант закреплён за филиалом и видит его заказы. Менеджер
-            управляет обоими кафе
+            Управление командой кафе — официантами и менеджерами
           </p>
         </div>
         <button
@@ -101,7 +90,6 @@ export function StaffManager({
               <th className="px-4 py-3 text-left">Имя</th>
               <th className="px-4 py-3 text-left">Email</th>
               <th className="px-4 py-3 text-left">Роль</th>
-              <th className="px-4 py-3 text-left">Филиал</th>
               <th className="px-4 py-3 text-left">Смена</th>
               <th className="px-4 py-3 text-left">Статус</th>
               <th className="px-4 py-3 text-left">Последний вход</th>
@@ -114,10 +102,6 @@ export function StaffManager({
                 <td className="px-4 py-3 font-medium">{row.name}</td>
                 <td className="px-4 py-3 text-ink-500">{row.email}</td>
                 <td className="px-4 py-3">{ROLE_LABEL[row.role]}</td>
-                <td className="px-4 py-3 text-ink-500">
-                  {branches.find((item) => item.id === row.branchId)?.name ??
-                    (row.role === "MANAGER" ? "Оба филиала" : "Не задан")}
-                </td>
                 <td className="px-4 py-3 text-ink-500">
                   {row.isNightShift ? "Ночная смена" : "Дневная смена"}
                 </td>
@@ -204,27 +188,6 @@ export function StaffManager({
               <option value="SENIOR_WAITER">Старший официант</option>
               <option value="MANAGER">Менеджер</option>
             </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="staff-branch">
-              Филиал
-            </label>
-            <select
-              id="staff-branch"
-              name="branchId"
-              className="input"
-              defaultValue={editing?.branchId ?? ""}
-            >
-              <option value="">Без привязки (менеджер)</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}, {branch.address}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-ink-400">
-              Для официанта филиал обязателен
-            </p>
           </div>
           <div>
             <label className="label" htmlFor="staff-password">

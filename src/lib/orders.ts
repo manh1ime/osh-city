@@ -108,6 +108,11 @@ export async function createGuestOrder(
       return { ok: false, error: `Блюдо «${item.name}» больше недоступно` };
     if (item.isStopListed)
       return { ok: false, error: `Блюдо «${item.name}» сегодня в стоп-листе` };
+    if (item.price <= 0)
+      return {
+        ok: false,
+        error: `У блюда «${item.name}» пока не указана цена. Обратитесь к официанту.`,
+      };
   }
 
   const totalQuantity = input.items.reduce(

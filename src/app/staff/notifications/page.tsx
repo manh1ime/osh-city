@@ -106,9 +106,9 @@ export default async function StaffNotificationsPage() {
             <dd className="text-white/85">{devices.length}</dd>
           </div>
           <div className="flex items-start justify-between gap-4 border-t border-white/10 pt-3">
-            <dt className="text-white/50">Ваш филиал</dt>
+            <dt className="text-white/50">Зал</dt>
             <dd className="text-right text-white/85">
-              {session.role === "MANAGER" ? "все филиалы" : "по карточке сотрудника"}
+              Ош-Сити · Ленинский проспект, 148
             </dd>
           </div>
         </dl>

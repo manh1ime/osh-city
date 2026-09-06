@@ -15,7 +15,7 @@ export default async function StaffLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = (await headers()).get("x-uchkuduk-pathname");
+  const pathname = (await headers()).get("x-osh-city-pathname");
   if (pathname === "/staff/login") return <>{children}</>;
   const session = await getSession("staff");
 
@@ -27,7 +27,7 @@ export default async function StaffLayout({
     getRestaurant(),
     prisma.staffUser.findUnique({
       where: { id: session.userId },
-      select: { isNightShift: true, branch: { select: { name: true } } },
+      select: { isNightShift: true },
     }),
   ]);
 
@@ -42,7 +42,7 @@ export default async function StaffLayout({
                 {restaurant.name}
               </p>
               <p className="truncate text-xs text-ink-400">
-              {session.name} · {roleLabel[session.role]} · {currentStaff?.branch?.name ?? "Все филиалы"} ·{" "}
+              {session.name} · {roleLabel[session.role]} ·{" "}
               {currentStaff?.isNightShift ? "Ночная смена" : "Дневная смена"}
               </p>
             </div>

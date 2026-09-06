@@ -28,7 +28,7 @@ export function isPushConfigured(): boolean {
   }
   try {
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT ?? "mailto:admin@uchkuduk.ru",
+      process.env.VAPID_SUBJECT ?? "mailto:admin@osh-city.ru",
       publicKey,
       privateKey,
     );
@@ -136,7 +136,7 @@ export async function sendPushToUsers(
  *
  * Заказы и вызовы — всем сотрудникам филиала стола.
  * Брони и предзаказы — только старшим официантам этого филиала.
- * Менеджер получает всё по обоим филиалам.
+ * Менеджер получает всё целиком.
  */
 export async function recipientsForEvent(input: {
   restaurantId: string;
@@ -151,7 +151,7 @@ export async function recipientsForEvent(input: {
       restaurantId: input.restaurantId,
       isActive: true,
       OR: [
-        // Менеджер ведёт оба филиала, поэтому филиал у него не задан.
+        // Менеджер видит все столы, поэтому филиал у него не задан.
         { role: "MANAGER" },
         {
           role: seniorOnly ? "SENIOR_WAITER" : { in: ["WAITER", "SENIOR_WAITER"] },

@@ -14,20 +14,19 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * Брони столов. Старший официант видит только свой филиал,
- * менеджер видит оба филиала.
+ * Брони столов. Персонал видит брони единственного зала кафе.
  */
 export default async function StaffReservationsPage() {
   const session = await requireRole(["WAITER", "SENIOR_WAITER", "MANAGER"]);
 
   const actor = await prisma.staffUser.findUnique({
     where: { id: session.userId },
-    select: { branchId: true, branch: { select: { name: true } } },
+    select: { branchId: true },
   });
 
   const isBranchStaff = session.role !== "MANAGER";
 
-  // Старший без филиала не должен видеть чужие брони.
+  // Сотрудник без филиала не должен видеть чужие брони.
   const rows =
     isBranchStaff && !actor?.branchId
       ? []
@@ -42,7 +41,6 @@ export default async function StaffReservationsPage() {
             },
           },
           include: {
-            branch: { select: { name: true } },
             assignedTo: { select: { id: true, name: true } },
             preorders: {
               include: { items: { orderBy: { nameSnapshot: "asc" } } },
@@ -57,7 +55,6 @@ export default async function StaffReservationsPage() {
     id: row.id,
     code: row.code,
     status: row.status,
-    branchName: row.branch.name,
     guestName: row.guestName,
     guestPhone: row.guestPhone,
     guestsCount: row.guestsCount,
@@ -92,9 +89,7 @@ export default async function StaffReservationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/45">
-            {isBranchStaff
-              ? (actor?.branch?.name ?? "Филиал не задан")
-              : "Все филиалы"}
+            Ош-Сити · Ленинский проспект, 148
           </p>
           <h1 className="mt-1 text-2xl font-semibold text-white">
             Бронирования
@@ -111,17 +106,9 @@ export default async function StaffReservationsPage() {
         </Link>
       </div>
 
-      {isBranchStaff && !actor?.branchId ? (
-        <p className="mt-6 rounded-lg border border-[#B7833E]/30 bg-[#B7833E]/10 px-4 py-3 text-sm text-[#E0B472]">
-          Вам не назначен филиал. Попросите менеджера указать его в карточке
-          сотрудника.
-        </p>
-      ) : null}
-
       <div className="mt-6">
           <ReservationsBoard
             reservations={reservations}
-            showBranch={!isBranchStaff}
             canManage={session.role !== "WAITER"}
           />
       </div>

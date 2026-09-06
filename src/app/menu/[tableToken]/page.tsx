@@ -1,28 +1,12 @@
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import { GuestMenu } from "@/components/guest/GuestMenu";
-import { Logo } from "@/components/brand/Logo";
 import { prisma } from "@/lib/db";
 import { getGuestMenu, toGuestMenuDto } from "@/lib/menu";
 import { getRestaurant } from "@/lib/restaurant";
 import { GUEST_COOKIE } from "@/lib/session-token";
 
 export const dynamic = "force-dynamic";
-
-function InvalidQrScreen() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-cream-100 px-6 text-center">
-      <div className="w-full max-w-sm rounded-2xl border border-cream-200 bg-white p-8">
-        <Logo variant="full" className="mx-auto mb-5 h-28 w-28" />
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
-          QR-код недействителен
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-ink-500">
-          Обратитесь к сотруднику ресторана. Вам помогут открыть меню или обновят QR-код на столе.
-        </p>
-      </div>
-    </main>
-  );
-}
 
 export default async function GuestMenuPage({
   params,
@@ -37,7 +21,7 @@ export default async function GuestMenuPage({
   });
 
   if (!table || table.restaurantId !== restaurant.id || !table.isActive) {
-    return <InvalidQrScreen />;
+    notFound();
   }
 
   // guestSessionId выдается middleware и используется дальше в API.

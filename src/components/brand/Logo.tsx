@@ -1,5 +1,5 @@
 /**
- * Единый логотип кафе «Учкудук».
+ * Единый логотип кафе «Ош-Сити».
  *
  * Два варианта одной графики:
  * - `full` — герб с надписью, для крупных блоков (герой лендинга, входы);
@@ -14,8 +14,8 @@
  */
 
 const SOURCE = {
-  full: "/images/uchkuduk-logo.webp",
-  emblem: "/images/uchkuduk-emblem.webp",
+  full: "/images/osh-city-logo.webp",
+  emblem: "/images/osh-city-emblem.webp",
 } as const;
 
 type Props = {
@@ -32,7 +32,7 @@ type Props = {
 export function Logo({
   variant = "emblem",
   className = "h-11 w-11",
-  alt = "Логотип кафе «Учкудук»",
+  alt = "Логотип кафе «Ош-Сити»",
 }: Props) {
   return (
     // eslint-disable-next-line @next/next/no-img-element

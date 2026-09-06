@@ -26,7 +26,6 @@ type ManagerOrdersSearchParams = {
   date?: string;
   table?: string;
   order?: string;
-  branch?: string;
 };
 
 export default async function ManagerOrdersPage({
@@ -42,7 +41,6 @@ export default async function ManagerOrdersPage({
     ? (query.status as OrderStatus)
     : undefined;
   const tableId = query.table || undefined;
-  const branchId = query.branch || undefined;
 
   let dateFilter: { gte: Date; lt: Date } | undefined;
   if (query.date) {
@@ -54,13 +52,12 @@ export default async function ManagerOrdersPage({
     }
   }
 
-  const [orders, tables, branches, selected] = await Promise.all([
+  const [orders, tables, selected] = await Promise.all([
     prisma.order.findMany({
       where: {
         restaurantId: session.restaurantId,
         ...(status ? { status } : {}),
         ...(tableId ? { tableId } : {}),
-        ...(branchId ? { table: { branchId } } : {}),
         ...(dateFilter ? { createdAt: dateFilter } : {}),
       },
       include: orderInclude,
@@ -71,16 +68,11 @@ export default async function ManagerOrdersPage({
       where: { restaurantId: session.restaurantId },
       orderBy: { number: "asc" },
     }),
-    prisma.branch.findMany({
-      where: { restaurantId: session.restaurantId, isActive: true },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    }),
     query.order
       ? prisma.order.findFirst({
           where: {
             id: query.order,
             restaurantId: session.restaurantId,
-            ...(branchId ? { table: { branchId } } : {}),
           },
           include: {
             ...orderInclude,
@@ -102,7 +94,6 @@ export default async function ManagerOrdersPage({
       status,
       date: query.date,
       table: tableId,
-      branch: branchId,
       ...params,
     };
 
@@ -124,15 +115,8 @@ export default async function ManagerOrdersPage({
 
       <form
         method="get"
-        className="card mt-5 grid max-w-5xl gap-3 p-4 sm:grid-cols-5"
+        className="card mt-5 grid max-w-5xl gap-3 p-4 sm:grid-cols-4"
       >
-        <div>
-          <label className="label" htmlFor="branch">Филиал</label>
-          <select id="branch" name="branch" defaultValue={branchId ?? ""} className="input">
-            <option value="">Все филиалы</option>
-            {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
-          </select>
-        </div>
         <div>
           <label className="label" htmlFor="status">
             Статус
@@ -203,7 +187,6 @@ export default async function ManagerOrdersPage({
                 Заказ {selected.orderNumber}
               </h2>
               <p className="text-sm text-ink-500">
-                Филиал: {selected.table.branch?.name ?? "Филиал не задан"} · {" "}
                 Стол № {selected.table.number}
                 {selected.table.zone ? ` · ${selected.table.zone}` : ""} ·{" "}
                 {formatDateTime(selected.createdAt)}

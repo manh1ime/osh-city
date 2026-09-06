@@ -14,13 +14,13 @@ export type SessionPayload = {
   exp: number; // unix seconds
 };
 
-export const STAFF_SESSION_COOKIE = "uchkuduk_staff_session";
-export const MANAGER_SESSION_COOKIE = "uchkuduk_manager_session";
-// Раздельные cookie для сотрудников, менеджеров и гостей кафе «Учкудук».
-export const SESSION_COOKIE = "uchkuduk_session";
-export const GUEST_COOKIE = "uchkuduk_guest";
+export const STAFF_SESSION_COOKIE = "osh-city_staff_session";
+export const MANAGER_SESSION_COOKIE = "osh-city_manager_session";
+// Раздельные cookie для сотрудников, менеджеров и гостей кафе «Ош-Сити».
+export const SESSION_COOKIE = "osh-city_session";
+export const GUEST_COOKIE = "osh-city_guest";
 // Телефон гостя для раздела «Мои бронирования». Без пароля и без аккаунта.
-export const GUEST_PHONE_COOKIE = "uchkuduk_guest_phone";
+export const GUEST_PHONE_COOKIE = "osh-city_guest_phone";
 export const GUEST_PHONE_TTL_SECONDS = 60 * 60 * 24 * 180; // полгода
 export const SESSION_TTL_SECONDS = 60 * 60 * 12; // 12 часов: смена
 

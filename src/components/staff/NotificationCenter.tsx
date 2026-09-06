@@ -21,8 +21,8 @@ import type {
  */
 
 const POLL_INTERVAL_MS = 10_000;
-const SEEN_STORAGE_KEY = "uchkuduk_notify_seen_v3";
-const SOUND_STORAGE_KEY = "uchkuduk_notify_sound_v3";
+const SEEN_STORAGE_KEY = "osh-city_notify_seen_v3";
+const SOUND_STORAGE_KEY = "osh-city_notify_sound_v3";
 const SEEN_LIMIT = 200;
 
 const KIND_LABEL: Record<StaffNotificationKind, string> = {
@@ -265,8 +265,8 @@ export function NotificationCenter() {
             await registration.showNotification(item.title, {
               body: item.body,
               tag: item.id,
-              icon: "/images/uchkuduk-emblem.webp",
-              badge: "/images/uchkuduk-emblem.webp",
+              icon: "/images/osh-city-emblem.webp",
+              badge: "/images/osh-city-emblem.webp",
               data: { url: item.href },
               requireInteraction: item.urgency === "high",
             });

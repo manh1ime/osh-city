@@ -9,10 +9,10 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Учкудук: панель персонала",
-    short_name: "Учкудук",
+    name: "Ош-Сити: панель персонала",
+    short_name: "Ош-Сити",
     description:
-      "Заказы со столиков, вызовы официанта и бронирования кафе «Учкудук»",
+      "Заказы со столиков, вызовы официанта и бронирования кафе «Ош-Сити»",
     start_url: "/staff/orders",
     scope: "/",
     display: "standalone",
@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "ru",
     icons: [
       {
-        src: "/images/uchkuduk-emblem.webp",
+        src: "/images/osh-city-emblem.webp",
         sizes: "192x192",
         type: "image/webp",
         purpose: "any",

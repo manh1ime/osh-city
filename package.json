@@ -1,8 +1,8 @@
 {
-  "name": "uchkuduk-qr",
+  "name": "osh-city-qr",
   "version": "1.0.0",
   "private": true,
-  "description": "QR-меню, заказы со столика, панель официанта и админ-панель ресторана «Учкудук»",
+  "description": "QR-меню, заказы со столика, панель официанта и админ-панель ресторана «Ош-Сити»",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -10,6 +10,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/**/*.test.ts",
+    "verify:deploy": "tsx scripts/verify-deploy.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev --name init",
     "db:studio": "prisma studio",

@@ -67,6 +67,12 @@ export async function createReservationPreorder(
     if (item.isStopListed) {
       return { ok: false, error: `Блюдо «${item.name}» сегодня в стоп-листе` };
     }
+    if (item.price <= 0) {
+      return {
+        ok: false,
+        error: `У блюда «${item.name}» пока не указана цена. Обратитесь к официанту.`,
+      };
+    }
   }
 
   const lines = input.items.map((line) => {

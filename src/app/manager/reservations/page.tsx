@@ -14,7 +14,6 @@ import { reservationStatusLabel } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 type SearchParams = {
-  branch?: string;
   status?: string;
   date?: string;
 };
@@ -28,7 +27,6 @@ export default async function ManagerReservationsPage({
 }) {
   const query = await searchParams;
   const session = await requireManager("reservations");
-  const branchId = query.branch || undefined;
   const status = STATUSES.includes(query.status as (typeof STATUSES)[number])
     ? (query.status as (typeof STATUSES)[number])
     : undefined;
@@ -43,37 +41,27 @@ export default async function ManagerReservationsPage({
     }
   }
 
-  const [branches, rows] = await Promise.all([
-    prisma.branch.findMany({
-      where: { restaurantId: session.restaurantId, isActive: true },
-      select: { id: true, name: true },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    }),
-    prisma.reservation.findMany({
-      where: {
-        restaurantId: session.restaurantId,
-        ...(branchId ? { branchId } : {}),
-        ...(status ? { status } : {}),
-        ...(dateFilter ? { reservedAt: dateFilter } : {}),
+  const rows = await prisma.reservation.findMany({
+    where: {
+      restaurantId: session.restaurantId,
+      ...(status ? { status } : {}),
+      ...(dateFilter ? { reservedAt: dateFilter } : {}),
+    },
+    include: {
+      assignedTo: { select: { id: true, name: true } },
+      preorders: {
+        include: { items: { orderBy: { nameSnapshot: "asc" } } },
+        orderBy: { createdAt: "asc" },
       },
-      include: {
-        branch: { select: { name: true } },
-        assignedTo: { select: { id: true, name: true } },
-        preorders: {
-          include: { items: { orderBy: { nameSnapshot: "asc" } } },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-      orderBy: [{ createdAt: "desc" }, { reservedAt: "desc" }],
-      take: 200,
-    }),
-  ]);
+    },
+    orderBy: [{ createdAt: "desc" }, { reservedAt: "desc" }],
+    take: 200,
+  });
 
   const reservations: StaffReservationDto[] = rows.map((row) => ({
     id: row.id,
     code: row.code,
     status: row.status,
-    branchName: row.branch.name,
     guestName: row.guestName,
     guestPhone: row.guestPhone,
     guestsCount: row.guestsCount,
@@ -102,12 +90,8 @@ export default async function ManagerReservationsPage({
   return (
     <div>
       <h1 className="font-display text-3xl text-ink-900">Бронирования</h1>
-      <p className="mt-1 text-sm text-ink-500">Все филиалы и предзаказы</p>
-      <form method="get" className="card mt-5 grid gap-3 p-4 sm:grid-cols-4">
-        <select name="branch" defaultValue={branchId ?? ""} className="input" aria-label="Филиал">
-          <option value="">Все филиалы</option>
-          {branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}
-        </select>
+      <p className="mt-1 text-sm text-ink-500">Все брони и предзаказы</p>
+      <form method="get" className="card mt-5 grid gap-3 p-4 sm:grid-cols-3">
         <select name="status" defaultValue={status ?? ""} className="input" aria-label="Статус">
           <option value="">Все статусы</option>
           {STATUSES.map((value) => <option key={value} value={value}>{reservationStatusLabel[value]}</option>)}
@@ -116,7 +100,7 @@ export default async function ManagerReservationsPage({
         <button type="submit" className="btn btn-dark">Применить</button>
       </form>
       <div className="mt-6">
-        <ReservationsBoard reservations={reservations} showBranch />
+        <ReservationsBoard reservations={reservations} />
       </div>
     </div>
   );

@@ -1,36 +1,43 @@
 BEGIN;
 
--- Обновляет старый бренд во всех текстовых полях прикладных таблиц PostgreSQL.
+-- Канонические значения кафе «Ош-Сити».
 -- История заказов не удаляется, QR-токены столов не меняются.
-DO $$
-DECLARE
-  column_record record;
-  statement text;
-BEGIN
-  FOR column_record IN
-    SELECT table_name, column_name
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND data_type IN ('character varying', 'character', 'text')
-      AND table_name <> '_prisma_migrations'
-  LOOP
-    statement := format(
-      'UPDATE %I SET %I = regexp_replace(regexp_replace(%I, %L, %L, %L), %L, %L, %L) WHERE %I ~* %L OR %I ~* %L',
-      column_record.table_name,
-      column_record.column_name,
-      column_record.column_name,
-      'учкудук', 'Учкудук', 'gi',
-      'uchkuduk|uchkuduk', 'uchkuduk', 'gi',
-      column_record.column_name, 'учкудук',
-      column_record.column_name, 'uchkuduk|uchkuduk'
-    );
-    EXECUTE statement;
-  END LOOP;
-END $$;
-
--- Канонические значения основного ресторана.
 UPDATE "Restaurant"
-SET "name" = 'Учкудук', "slug" = 'uchkuduk', "updatedAt" = CURRENT_TIMESTAMP
-WHERE lower("name") = 'учкудук' OR lower("slug") = 'uchkuduk';
+SET "name" = 'Ош-Сити',
+    "slug" = 'osh-city',
+    "address" = 'Ленинский проспект, 148',
+    "updatedAt" = CURRENT_TIMESTAMP
+WHERE "slug" <> 'osh-city' OR "name" <> 'Ош-Сити' OR "address" IS DISTINCT FROM 'Ленинский проспект, 148';
+
+-- Единственный филиал: Ленинский проспект, 148.
+INSERT INTO "Branch" (
+  "id", "restaurantId", "name", "slug", "address", "phone", "description",
+  "openTime", "closeTime", "tablesCount", "seatsPerTable", "isActive",
+  "sortOrder", "createdAt", "updatedAt"
+)
+SELECT
+  'osh-city-leninsky', r."id", 'Ленинский проспект, 148', 'leninsky',
+  'Ленинский проспект, 148', '+7(931)392-00-02', 'Основной зал кафе. Работаем круглосуточно.',
+  '00:00', '23:59', 12, 4, true, 10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+FROM "Restaurant" r
+WHERE r."slug" = 'osh-city'
+ON CONFLICT ("id") DO UPDATE
+SET "restaurantId" = EXCLUDED."restaurantId",
+    "name" = EXCLUDED."name",
+    "address" = EXCLUDED."address",
+    "phone" = EXCLUDED."phone",
+    "description" = EXCLUDED."description",
+    "openTime" = EXCLUDED."openTime",
+    "closeTime" = EXCLUDED."closeTime",
+    "isActive" = true,
+    "updatedAt" = CURRENT_TIMESTAMP;
+
+-- Все остальные филиалы (остатки прежней конфигурации) убираем из работы.
+-- Удалять нельзя: на них ссылаются старые заказы и бронирования.
+UPDATE "Branch" SET "isActive" = false, "updatedAt" = CURRENT_TIMESTAMP
+WHERE "slug" <> 'leninsky';
+
+UPDATE "Table" SET "isActive" = false, "updatedAt" = CURRENT_TIMESTAMP
+WHERE "branchId" IN (SELECT "id" FROM "Branch" WHERE "slug" <> 'leninsky');
 
 COMMIT;

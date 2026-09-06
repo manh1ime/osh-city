@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  * Вход сотрудника.
  *
  * Все редиректы относительные: `request.url` на Netlify содержит внутренний
- * адрес деплоя (`<hash>--uchkuduk-cafe.netlify.app`), а cookie ставится
+ * адрес деплоя (`<hash>--osh-city-cafe.netlify.app`), а cookie ставится
  * host-only на публичный домен. Абсолютный редирект уводил браузер на другой
  * хост, cookie туда не отправлялась, и первый вход всегда возвращал на форму.
  */

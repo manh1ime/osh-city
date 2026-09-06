@@ -5,15 +5,15 @@ const prisma = new PrismaClient();
 
 async function main() {
   const result = await prisma.restaurant.updateMany({
-    where: { OR: [{ slug: "uchkuduk" }, { name: { equals: "Учкудук", mode: "insensitive" } }] },
+    where: { OR: [{ slug: "osh-city" }, { name: { equals: "Ош-Сити", mode: "insensitive" } }] },
     data: {
-      name: "Учкудук",
-      slug: "uchkuduk",
+      name: "Ош-Сити",
+      slug: "osh-city",
       primaryColor: "#D7AA50",
       coverImageUrl: "/images/eastern-night-hero.webp",
     },
   });
-  if (!result.count) throw new Error("Ресторан Учкудук не найден");
+  if (!result.count) throw new Error("Ресторан Ош-Сити не найден");
   console.log(`✅ Оформление ресторана обновлено. Записей: ${result.count}`);
 }
 

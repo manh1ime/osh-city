@@ -78,8 +78,8 @@ export function GuestMenu({
   const router = useRouter();
   const isReservationMenu = Boolean(reservation);
   const storageKey = reservation
-    ? `uchkuduk_reservation_cart_${reservation.code}`
-    : `uchkuduk_cart_${tableToken}`;
+    ? `osh-city_reservation_cart_${reservation.code}`
+    : `osh-city_cart_${tableToken}`;
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [search, setSearch] = useState("");
@@ -190,6 +190,10 @@ export function GuestMenu({
     if (viewOnly) return;
     const item = itemsById.get(itemId);
     if (!item || item.isStopListed) return;
+    if (item.price <= 0) {
+      setError(`У блюда «${item.name}» пока не указана цена. Обратитесь к официанту.`);
+      return;
+    }
     animateToCart(item, origin);
     setCart((prev) => {
       const existing = prev.find(
@@ -437,7 +441,7 @@ export function GuestMenu({
               {viewOnly
                 ? "Это гостевое меню только для просмотра. Заказ можно оформить за столом по QR-коду или предзаказом к брони."
                 : reservation
-                  ? "Предзаказ увидит старший официант вашего филиала. Способ приготовления вы выберете в корзине."
+                  ? "Предзаказ увидит старший официант зала. Способ приготовления вы выберете в корзине."
                   : "Заказ увидит официант и подтвердит перед передачей на кухню."}
             </p>
           </div>

@@ -79,13 +79,9 @@ export default async function ReservationPage({
 
           <dl className="mt-6 space-y-3 text-sm">
             <div className="flex justify-between gap-4 border-t border-white/10 pt-3">
-              <dt className="text-white/45">Филиал</dt>
+              <dt className="text-white/45">Адрес</dt>
               <dd className="text-right text-white/85">
-                {reservation.branch.name}
-                <br />
-                <span className="text-white/55">
-                  {reservation.branch.address}
-                </span>
+                {reservation.branch.address}
               </dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-white/10 pt-3">

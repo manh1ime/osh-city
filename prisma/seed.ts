@@ -58,7 +58,7 @@ async function main() {
     create: { restaurantId: restaurant.id },
   });
 
-  // Филиалы: Васильевский остров и Садовая улица.
+  // Филиал ровно один: Ленинский проспект, 148.
   const branchIdBySlug = new Map<string, string>();
   for (const branch of branchesSeed) {
     const saved = await prisma.branch.upsert({
@@ -89,6 +89,27 @@ async function main() {
       },
     });
     branchIdBySlug.set(branch.slug, saved.id);
+  }
+  // Остатки старой конфигурации с несколькими филиалами убираем из работы:
+  // удалять нельзя, на них ссылаются старые заказы и бронирования.
+  const legacyBranches = await prisma.branch.findMany({
+    where: {
+      restaurantId: restaurant.id,
+      slug: { notIn: branchesSeed.map((branch) => branch.slug) },
+    },
+    select: { id: true },
+  });
+  if (legacyBranches.length > 0) {
+    const legacyIds = legacyBranches.map((branch) => branch.id);
+    await prisma.branch.updateMany({
+      where: { id: { in: legacyIds } },
+      data: { isActive: false },
+    });
+    await prisma.table.updateMany({
+      where: { branchId: { in: legacyIds } },
+      data: { isActive: false },
+    });
+    console.log(`→ Отключено старых филиалов: ${legacyIds.length}`);
   }
   console.log(`→ Филиалов: ${branchIdBySlug.size}`);
 
@@ -166,7 +187,7 @@ async function main() {
     data: { isActive: false },
   });
 
-  // Столы: по 12 в каждом филиале, по 4 места.
+  // Столы: 12 в единственном зале, по 4 места.
   for (const table of tablesSeed) {
     const branchId = branchIdBySlug.get(table.branchSlug);
     if (!branchId) {
@@ -194,7 +215,7 @@ async function main() {
     }
   }
 
-  // Сотрудники «Учкудука» теряют доступ, но остаются в истории заказов.
+  // Сотрудники «Ош-Ситиа» теряют доступ, но остаются в истории заказов.
   if (legacyStaffEmails.length > 0) {
     const removed = await prisma.staffUser.updateMany({
       where: {
@@ -208,7 +229,7 @@ async function main() {
     }
   }
 
-  // Новый персонал «Учкудука» с привязкой к филиалу.
+  // Новый персонал «Ош-Сити» с привязкой к единственному филиалу.
   for (const member of staffSeed) {
     const branchId = member.branchSlug
       ? (branchIdBySlug.get(member.branchSlug) ?? null)
@@ -247,13 +268,13 @@ async function main() {
   console.log("\n✅ Seed завершен.\n");
   console.log("Доступы сотрудников (пароль: " + password + "):");
   for (const member of staffSeed) {
-    const where = member.branchSlug ?? "оба филиала";
+    const where = member.branchSlug ?? "без филиала (менеджер)";
     console.log(
       `  ${member.role.padEnd(8)} ${member.name.padEnd(12)} ${member.email.padEnd(24)} ${where}`,
     );
   }
   console.log("\nQR-ссылки столов:");
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://uchkuduk.ru";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://osh-city.ru";
   for (const table of tables) {
     const branchName = table.branch?.name ?? "без филиала";
     console.log(

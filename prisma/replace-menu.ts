@@ -5,7 +5,7 @@ import { categoriesSeed, menuItemsSeed } from "./menu-data";
 const prisma = new PrismaClient();
 
 async function main() {
-  const slug = process.env.RESTAURANT_SLUG ?? "uchkuduk";
+  const slug = process.env.RESTAURANT_SLUG ?? "osh-city";
   const restaurant = await prisma.restaurant.findUnique({ where: { slug } });
   if (!restaurant) throw new Error(`Ресторан ${slug} не найден`);
 

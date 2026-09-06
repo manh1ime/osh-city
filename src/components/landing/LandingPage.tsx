@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createReservationAction } from "@/actions/reservations";
 import { Logo } from "@/components/brand/Logo";
-import type { BranchDto } from "@/lib/branches";
+import {
+  RESTAURANT_ADDRESS,
+  RESTAURANT_PHONE,
+  RESTAURANT_PHONE_HREF,
+  type BranchDto,
+} from "@/lib/branches";
 import {
   RESERVATION_LIMITS,
   combineDateAndTime,
@@ -21,7 +26,8 @@ type RestaurantDto = {
 
 type Props = {
   restaurant: RestaurantDto;
-  branches: BranchDto[];
+  /** Единственный филиал кафе: выбор филиала из приложения убран. */
+  branch: BranchDto | null;
 };
 
 /** Дата в формате input[type=date]: "2026-09-01". */
@@ -32,7 +38,7 @@ function toIsoDate(value: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function LandingPage({ restaurant, branches }: Props) {
+export function LandingPage({ restaurant, branch }: Props) {
   // Границы календаря считаем один раз: сегодня и потолок бронирования.
   const today = useMemo(() => toIsoDate(new Date()), []);
   const maxDate = useMemo(() => {
@@ -41,7 +47,6 @@ export function LandingPage({ restaurant, branches }: Props) {
     return toIsoDate(limit);
   }, []);
 
-  const [branchSlug, setBranchSlug] = useState(branches[0]?.slug ?? "");
   const [date, setDate] = useState(today);
   const [time, setTime] = useState("19:00");
   const [guests, setGuests] = useState(2);
@@ -61,11 +66,6 @@ export function LandingPage({ restaurant, branches }: Props) {
     setActiveReservationCode(localStorage.getItem("activeReservationCode"));
   }, []);
 
-  const branch = useMemo(
-    () => branches.find((item) => item.slug === branchSlug) ?? branches[0],
-    [branches, branchSlug],
-  );
-
   const dateLabel = useMemo(() => {
     const parsed = combineDateAndTime(date, "12:00");
     return parsed ? formatReservationDate(parsed) : "";
@@ -78,7 +78,6 @@ export function LandingPage({ restaurant, branches }: Props) {
     setIsPending(true);
 
     const formData = new FormData();
-    formData.set("branchSlug", branchSlug);
     formData.set("name", name);
     formData.set("phone", phone);
     formData.set("date", date);
@@ -152,7 +151,7 @@ export function LandingPage({ restaurant, branches }: Props) {
             alt=""
           />
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/60">
-            Санкт-Петербург · два филиала
+            {RESTAURANT_ADDRESS}
           </p>
           <h1 className="guest-display mt-3 max-w-2xl text-4xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
             {restaurant.name}
@@ -194,22 +193,23 @@ export function LandingPage({ restaurant, branches }: Props) {
          <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/50">
            Режим работы
          </p>
-         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-           {branches.map((item) => (
-             <div key={item.id} className="guest-menu-card rounded-xl p-5">
-               <h2 className="guest-display text-xl font-semibold text-white">
-                 {item.name}
-               </h2>
-               <p className="mt-2 text-sm text-white/60">{item.address}</p>
-               <p className="mt-4 text-sm font-medium text-[#E0B472]">
-                 {item.slug === "vasilievsky"
-                   ? "Круглосуточно"
-                   : item.slug === "sadovaya"
-                     ? "Ежедневно до 02:00"
-                     : workingHoursLabel(item.openTime, item.closeTime)}
-               </p>
-             </div>
-           ))}
+         <div className="mt-5 grid gap-4">
+           <div className="guest-menu-card rounded-xl p-5">
+             <h2 className="guest-display text-xl font-semibold text-white">
+               {RESTAURANT_ADDRESS}
+             </h2>
+             <p className="mt-2 text-sm text-white/60">
+               {branch
+                 ? workingHoursLabel(branch.openTime, branch.closeTime)
+                 : "Работаем круглосуточно"}
+             </p>
+             <a
+               href={RESTAURANT_PHONE_HREF}
+               className="mt-4 inline-block text-sm font-medium text-[#E0B472]"
+             >
+               {RESTAURANT_PHONE}
+             </a>
+           </div>
          </div>
       </section>
 
@@ -223,7 +223,7 @@ export function LandingPage({ restaurant, branches }: Props) {
         </h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <a
-            href="https://yandex.ru/maps/org/uchkuduk/65264289157/?ll=30.279601%2C59.939102&z=16"
+            href={`https://yandex.ru/maps/?text=${encodeURIComponent(RESTAURANT_ADDRESS)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
@@ -236,7 +236,7 @@ export function LandingPage({ restaurant, branches }: Props) {
             </p>
           </a>
           <a
-            href="https://2gis.ru/spb/firm/70000001050218284?immersive=on"
+            href={`https://2gis.ru/search/${encodeURIComponent(RESTAURANT_ADDRESS)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
@@ -249,7 +249,7 @@ export function LandingPage({ restaurant, branches }: Props) {
             </p>
           </a>
           <a
-            href="https://www.google.com/maps/place/%D0%A3%D1%87%D0%BA%D1%83%D0%94%D1%83%D0%BA/@59.9391759,30.2794907,21z/data=!4m22!1m15!4m14!1m6!1m2!1s0x469631a5e66d51c5:0x6f00589ac258db97!2z0J3QtdCy0YHQutC40Lkg0L_RgC4sINCh0LDQvdC60YIt0J_QtdGC0LXRgNCx0YPRgNCz!2m2!1d30.3605437!2d59.9311778!1m6!1m2!1s0x46963126b8a9e59b:0x1cfa29683ef58416!2z0KPRh9C60YPQlNGD0LosIDkt0Y8g0LvQuNC9LiwgMTYsINCh0LDQvdC60YIt0J_QtdGC0LXRgNCx0YPRgNCzLCAxOTkwMDQ!2m2!1d30.2795063!2d59.9391377!3m5!1s0x46963126b8a9e59b:0x1cfa29683ef58416!8m2!3d59.9391377!4d30.2795063!16s%2Fg%2F11bxf_3k1d?entry=ttu&g_ep=EgoyMDI2MDgyNi4wIKXMDSoASAFQAw%3D%3D"
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(RESTAURANT_ADDRESS)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
@@ -276,7 +276,7 @@ export function LandingPage({ restaurant, branches }: Props) {
                 Ждём вас, {name || "гость"}!
               </h2>
               <p className="mt-3 text-sm text-white/65">
-                {branch?.name} · {branch?.address}
+                {RESTAURANT_ADDRESS}
                 <br />
                 {dateLabel} в {time} · {guestsLabel(guests)}
               </p>
@@ -322,11 +322,7 @@ export function LandingPage({ restaurant, branches }: Props) {
               <h2 className="guest-display mt-2 text-2xl font-semibold text-white">
                 Забронировать стол
               </h2>
-              <p className="mt-2 text-sm text-white/55">
-                {branch
-                  ? `${branch.name} · ${branch.address}`
-                  : "Выберите филиал выше"}
-              </p>
+              <p className="mt-2 text-sm text-white/55">{RESTAURANT_ADDRESS}</p>
 
               <form onSubmit={submit} className="mt-6 space-y-5">
                 {/* Дата: обычный календарь браузера */}
@@ -404,24 +400,6 @@ export function LandingPage({ restaurant, branches }: Props) {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="label text-white/70" htmlFor="branch">
-                      Филиал
-                    </label>
-                    <select
-                      id="branch"
-                      className="input"
-                      value={branchSlug}
-                      onChange={(event) => setBranchSlug(event.target.value)}
-                    >
-                      {branches.map((item) => (
-                        <option key={item.id} value={item.slug}>
-                          {item.name}, {item.address}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
                     <label className="label text-white/70" htmlFor="name">
                       Имя
                     </label>
@@ -473,7 +451,7 @@ export function LandingPage({ restaurant, branches }: Props) {
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-white/40">
-                    Старший официант филиала подтвердит бронь по телефону.
+                    Старший официант подтвердит бронь по телефону.
                   </p>
                   <button
                     type="submit"
@@ -496,15 +474,17 @@ export function LandingPage({ restaurant, branches }: Props) {
             {restaurant.name}
           </p>
           <ul className="mt-2 space-y-1">
-            {branches.map((item) => (
-              <li key={item.id}>
-                 {item.address} · {item.slug === "vasilievsky"
-                   ? "круглосуточно"
-                   : item.slug === "sadovaya"
-                     ? "ежедневно до 02:00"
-                     : workingHoursLabel(item.openTime, item.closeTime)}
-              </li>
-            ))}
+            <li>
+              {RESTAURANT_ADDRESS} ·{" "}
+              {branch
+                ? workingHoursLabel(branch.openTime, branch.closeTime)
+                : "круглосуточно"}
+            </li>
+            <li>
+              <a href={RESTAURANT_PHONE_HREF} className="text-[#E0B472]">
+                {RESTAURANT_PHONE}
+              </a>
+            </li>
           </ul>
         </div>
       </footer>

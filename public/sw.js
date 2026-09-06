@@ -1,5 +1,5 @@
 /*
- * Service worker кафе «Учкудук».
+ * Service worker кафе «Ош-Сити».
  *
  * Нужен для Web Push: только он может показать уведомление, когда вкладка
  * закрыта или браузер свёрнут. Без service worker на iOS уведомления
@@ -26,14 +26,14 @@ self.addEventListener("push", (event) => {
     payload = {};
   }
 
-  const title = payload.title || "Учкудук";
+  const title = payload.title || "Ош-Сити";
   const options = {
     body: payload.body || "Новое событие в панели",
     // Иконка обязательна на Android, иначе показывается силуэт браузера.
-    icon: "/images/uchkuduk-emblem.webp",
-    badge: "/images/uchkuduk-emblem.webp",
+    icon: "/images/osh-city-emblem.webp",
+    badge: "/images/osh-city-emblem.webp",
     // tag заменяет предыдущее уведомление того же события вместо дубля.
-    tag: payload.tag || "uchkuduk-event",
+    tag: payload.tag || "osh-city-event",
     // Вибрация задаётся сервером: срочное событие ощущается длиннее.
     vibrate: payload.vibrate || [150, 80, 150],
     // Срочное уведомление не исчезает само: официант мог не смотреть на экран.

@@ -5,14 +5,15 @@ import "./globals.css";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-  title: "Учкудук: бронь стола и заказ со столика",
-  description: "Кафе «Учкудук»: бронирование стола, электронное меню и заказы в двух филиалах",
+  title: "Ош-Сити: бронь стола и заказ со столика",
+  description:
+    "Кафе «Ош-Сити»: бронирование стола, электронное меню и заказ со столика",
   robots: { index: false, follow: false },
   manifest: "/manifest.webmanifest",
   // iOS показывает push только для сайта, добавленного на домашний экран.
   appleWebApp: {
     capable: true,
-    title: "Учкудук",
+    title: "Ош-Сити",
     statusBarStyle: "black-translucent",
   },
 };

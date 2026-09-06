@@ -91,7 +91,7 @@ export async function getStaffNotifications(input: {
     select: { branchId: true, branch: { select: { name: true } } },
   });
 
-  // Менеджер видит оба филиала. Сотрудник без филиала не должен видеть чужие
+  // Менеджер видит все столы. Сотрудник без филиала не должен видеть чужие
   // столы, поэтому вместо «всех» ему отдаём пустую выборку.
   const isBranchStaff = input.role !== "MANAGER";
   const branchId = isBranchStaff ? staff?.branchId ?? null : null;

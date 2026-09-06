@@ -29,7 +29,7 @@ export async function GET(
       restaurant: {
         name: restaurant.name,
         description: restaurant.description,
-        logoUrl: "/images/uchkuduk-logo.webp",
+        logoUrl: "/images/osh-city-logo.webp",
         coverImageUrl: restaurant.coverImageUrl,
         currency: restaurant.currency,
         isOrderingEnabled: restaurant.isOrderingEnabled,

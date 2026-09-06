@@ -1,0 +1,113 @@
+ОТЧЁТ: «Учкудук» -> «Ош-Сити». Выполнена первая половина работ
+=============================================================
+
+Дата: 2026-09-06
+Рабочая папка: D:\Osh-City  (полная копия проекта)
+Оригинал:      D:\Uchkuduk\uchkuduk-original  — НЕ ТРОГАЛ, все изменения только в D:\Osh-City
+
+
+1. ЧТО СДЕЛАНО В ЭТОМ ЗАХОДЕ
+----------------------------
+
+А) Брендинг добит до конца
+   - Название «Учкудук» убрано полностью. Проверено поиском по всему проекту
+     (кроме node_modules, .next, .git): совпадений больше нет.
+   - Оставлен ровно один филиал: Ленинский проспект, 148.
+     Старые адреса («Васильевский остров 9-я линия 16», «Садовая улица, 44»)
+     из кода удалены.
+   - Телефон в подвале сайта: +7(931)392-00-02 (константа RESTAURANT_PHONE,
+     ссылка tel:+79313920002).
+   - Единственный адрес: Ленинский проспект, 148 (константа RESTAURANT_ADDRESS).
+
+Б) Меню полностью заменено на меню «Ош-Сити»
+   - Источник: папка D:\Меню Ош-Сити. Название папки = категория,
+     название файла = название блюда.
+   - Итог: 9 категорий, 67 позиций:
+       Завтраки 6, Первые блюда 8, Вторые блюда 16, Мангал 5, Салаты 10,
+       Выпечка 1, Десерты 1, Горячие напитки 5, Холодные напитки 15.
+   - Все 67 фотографий блюд скопированы в public\menu.
+   - 63 старые фотографии блюд из меню удалены (по вашему подтверждению).
+     В uchkuduk-original они все целы.
+   - Объём из названия файла (1 л, 0,45 л, 0,33 л, 0,5 л, 0,3 л) вынесен
+     в поле «Вес/объём», чтобы позиции «Пепси 0,33 л / 0,5 л / 1 л» не слипались.
+
+В) Цены и составы
+   - Сейчас у всех позиций price = 0 и пустое описание — вы сказали, что
+     загрузите их позже.
+   - Создан файл PRICE_TODO.md: таблица всех 67 позиций (категория, блюдо,
+     вес/объём, пустые колонки «Цена» и «Состав») + инструкция, как применять.
+
+Г) Проверка
+   - npx tsc --noEmit — ошибок нет.
+
+
+2. ФАЙЛЫ, ИЗМЕНЁННЫЕ В ЭТОМ ЗАХОДЕ
+----------------------------------
+
+prisma/menu-data.ts          — ПОЛНОСТЬЮ ПЕРЕПИСАН: новое меню (9 категорий, 67 блюд)
+prisma/seed-data.ts          — удалено старое меню (было 148 строк мёртвых данных),
+                               убрано упоминание «Учкудука» в комментарии
+prisma/replace-branding.sql  — переписан: приводит ресторан к «Ош-Сити»,
+                               Ленинский проспект 148, телефон +7(931)392-00-02,
+                               отключает все прочие филиалы
+src/app/layout.tsx           — в описании сайта убрано «в двух филиалах»
+src/actions/reservations.ts  — убраны старые адреса из комментария про маршрутизацию
+src/components/guest/GuestMenu.tsx — текст «старший официант вашего филиала»
+                               заменён на «старший официант зала»
+README-BRANDING.md           — переписан под один филиал, адрес и телефон
+README-MENU-UPDATE.md        — переписан под новое меню «Ош-Сити»
+PROJECT_PLAN.md              — «Учкудук» -> «Ош-Сити»
+TIMEWEB_DEPLOY.md            — «Учкудук» -> «Ош-Сити», uchkuduk -> osh-city
+                               (пути /opt/..., /var/backups/...), исправлена
+                               опечатка «cle#» в заголовке
+.env.production              — POSTGRES_USER/POSTGRES_DB/RESTAURANT_SLUG:
+                               uchkuduk -> osh-city, NEXT_PUBLIC_APP_URL -> osh-city.ru
+.env.production.example      — то же самое
+package-lock.json            — имя пакета uchkuduk-qr -> osh-city-qr
+PRICE_TODO.md                — НОВЫЙ: список позиций для заполнения цен и составов
+public/menu/                 — удалены 63 старых фото, добавлены 67 новых
+
+(Файлы, изменённые в предыдущем заходе, тоже в силе: src/lib/branches.ts,
+src/lib/restaurant.ts, src/components/brand/Logo.tsx, src/app/manifest.ts,
+src/app/page.tsx, src/components/landing/LandingPage.tsx,
+src/app/manager/layout.tsx, src/app/staff/layout.tsx, src/middleware.ts,
+src/lib/http.ts, src/lib/push.ts, src/lib/session-token.ts,
+src/actions/settings.ts, src/app/api/auth/login/route.ts,
+src/app/api/guest/menu/[tableToken]/route.ts,
+src/components/staff/NotificationCenter.tsx, prisma/seed.ts,
+prisma/replace-menu.ts, prisma/apply-eastern-night.ts, docker-compose.yml,
+package.json, .env.example, STRUCTURE.md, TESTING_AND_VERCEL_GUIDE.md,
+public/sw.js, public/images/osh-city-logo.webp, public/images/osh-city-emblem.webp.)
+
+
+3. ЧТО ОСТАЛОСЬ (вторая половина)
+---------------------------------
+
+1) Убрать выбор филиала из интерфейса (это главное, что осталось):
+   - src/app/manager/orders/page.tsx       — фильтр «Все филиалы» (строки ~105, 131)
+   - src/app/manager/reports/page.tsx      — фильтр «Все филиалы» (строка ~112)
+   - src/app/manager/reservations/page.tsx — фильтр «Все филиалы» (строки ~105, 107),
+                                             <ReservationsBoard showBranch />
+   - src/components/manager/StaffManager.tsx — выбор филиала в карточке сотрудника,
+                                             текст «Для официанта филиал обязателен»
+   - src/components/staff/ReservationsBoard.tsx — колонка «филиал» в списке броней
+   - src/app/staff/layout.tsx              — «Все филиалы» в шапке (строка 45)
+   - src/app/staff/notifications/page.tsx  — «Ваш филиал: все филиалы» (строка ~109)
+   - src/app/staff/reservations/page.tsx   — «Все филиалы» (строка ~97),
+                                             «Вам не назначен филиал» (строка ~116)
+   - src/app/staff/calls/page.tsx, orders/page.tsx — фильтрация по branchId
+   - src/app/manager/staff/page.tsx        — ensureBranches + привязка к филиалу
+
+2) Добавить цены и составы блюд (ждём от вас данные) — список в PRICE_TODO.md.
+
+3) Проверить тексты в manager/staff-панелях на упоминания «филиалов» во множественном
+   числе и привести к одному залу.
+
+4) Сборка и прогон: npm run build, npm run db:seed.
+
+
+4. КАК ПРИМЕНИТЬ МЕНЮ К БАЗЕ
+----------------------------
+
+Новая база:   npm run db:seed
+Существующая: npx tsx prisma/replace-menu.ts   (история заказов сохраняется)

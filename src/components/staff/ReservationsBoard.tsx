@@ -15,7 +15,6 @@ export type StaffReservationDto = {
   id: string;
   code: string;
   status: "PENDING" | "CONFIRMED" | "SEATED" | "CANCELED" | "NO_SHOW";
-  branchName: string;
   guestName: string;
   guestPhone: string;
   guestsCount: number;
@@ -60,11 +59,9 @@ const STATUS_BADGE: Record<StaffReservationDto["status"], string> = {
 /** Доска броней для старшего официанта и менеджера. */
 export function ReservationsBoard({
   reservations,
-  showBranch,
   canManage = true,
 }: {
   reservations: StaffReservationDto[];
-  showBranch: boolean;
   canManage?: boolean;
 }) {
   const router = useRouter();
@@ -171,7 +168,6 @@ export function ReservationsBoard({
 
           <p className="mt-4 text-sm text-white/75">
             {item.dateLabel} в {item.timeLabel} · {item.guestsLabel}
-            {showBranch ? ` · ${item.branchName}` : ""}
           </p>
           <p className="mt-1 text-sm text-white/45">
             {item.assignedToName

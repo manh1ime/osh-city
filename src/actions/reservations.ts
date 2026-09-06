@@ -244,9 +244,8 @@ export async function createReservationAction(
     return { ok: true, code: duplicate.code };
   }
 
-  // Маршрутизация: бронь падает старшему официанту того же филиала.
-  // Васильевский остров ведёт Гулнара, Садовую улицу ведёт Худойберди.
-  // Если старшего в филиале нет, бронь остаётся нераспределённой: её видит менеджер.
+  // Маршрутизация: бронь падает старшему официанту зала.
+  // Если старшего нет, бронь остаётся нераспределённой: её видит менеджер.
   const seniorWaiter = await prisma.staffUser.findFirst({
     where: {
       restaurantId: restaurant.id,
@@ -386,7 +385,7 @@ async function cancelMyReservation(
 
 /**
  * Смена статуса брони со стороны персонала.
- * Старший официант работает только со своим филиалом, менеджер видит оба.
+ * Старший официант видит свой зал, менеджер — весь ресторан.
  */
 export async function setReservationStatusAction(
   formData: FormData,
