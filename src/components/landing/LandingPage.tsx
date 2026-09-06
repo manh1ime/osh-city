@@ -226,9 +226,9 @@ export function LandingPage({ restaurant, branch }: Props) {
         <h2 className="guest-display mt-2 text-2xl font-semibold text-white">
           Постройте маршрут к нам
         </h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <a
-            href={`https://yandex.ru/maps/?text=${encodeURIComponent(RESTAURANT_ADDRESS)}`}
+            href="https://yandex.ru/maps/org/osh_siti/184794803845/?ll=30.293869%2C59.852421&z=13"
             target="_blank"
             rel="noopener noreferrer"
             className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
@@ -241,7 +241,7 @@ export function LandingPage({ restaurant, branch }: Props) {
             </p>
           </a>
           <a
-            href={`https://2gis.ru/search/${encodeURIComponent(RESTAURANT_ADDRESS)}`}
+            href="https://2gis.ru/spb/search/%D0%BE%D1%88-%D1%81%D0%B8%D1%82%D0%B8%20/firm/70000001093799136/30.294096%2C59.852343?m=30.294096%2C59.852343%2F16&immersive=on"
             target="_blank"
             rel="noopener noreferrer"
             className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
@@ -251,19 +251,6 @@ export function LandingPage({ restaurant, branch }: Props) {
             </p>
             <p className="mt-2 text-sm text-white/60">
               Найти нас в навигаторе и по телефону
-            </p>
-          </a>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(RESTAURANT_ADDRESS)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="guest-menu-card rounded-xl p-5 transition hover:opacity-90"
-          >
-            <p className="guest-display text-lg font-semibold text-white">
-              Google Карты
-            </p>
-            <p className="mt-2 text-sm text-white/60">
-              Прокладывать маршрут на смартфоне
             </p>
           </a>
         </div>

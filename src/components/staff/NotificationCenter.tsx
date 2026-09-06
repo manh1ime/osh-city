@@ -265,8 +265,8 @@ export function NotificationCenter() {
             await registration.showNotification(item.title, {
               body: item.body,
               tag: item.id,
-              icon: "/images/osh-city-emblem.webp",
-              badge: "/images/osh-city-emblem.webp",
+              icon: "/images/logo-osh.png",
+              badge: "/images/logo-osh.png",
               data: { url: item.href },
               requireInteraction: item.urgency === "high",
             });

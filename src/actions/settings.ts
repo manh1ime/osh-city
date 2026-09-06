@@ -38,7 +38,7 @@ export async function saveSettingsAction(
       name: input.name,
       description: input.description || null,
       address: input.address || null,
-      logoUrl: "/images/osh-city-logo.webp",
+      logoUrl: "/images/logo-osh.png",
       coverImageUrl: input.coverImageUrl || null,
       isOrderingEnabled: input.isOrderingEnabled,
     },

@@ -14,8 +14,8 @@
  */
 
 const SOURCE = {
-  full: "/images/osh-city-logo.webp",
-  emblem: "/images/osh-city-emblem.webp",
+  full: "/images/logo-osh.png",
+  emblem: "/images/logo-osh.png",
 } as const;
 
 type Props = {

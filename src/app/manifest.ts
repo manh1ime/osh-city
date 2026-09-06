@@ -22,9 +22,9 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "ru",
     icons: [
       {
-        src: "/images/osh-city-emblem.webp",
+        src: "/images/logo-osh.png",
         sizes: "192x192",
-        type: "image/webp",
+         type: "image/png",
         purpose: "any",
       },
       {

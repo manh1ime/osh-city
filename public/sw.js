@@ -30,8 +30,8 @@ self.addEventListener("push", (event) => {
   const options = {
     body: payload.body || "Новое событие в панели",
     // Иконка обязательна на Android, иначе показывается силуэт браузера.
-    icon: "/images/osh-city-emblem.webp",
-    badge: "/images/osh-city-emblem.webp",
+    icon: "/images/logo-osh.png",
+    badge: "/images/logo-osh.png",
     // tag заменяет предыдущее уведомление того же события вместо дубля.
     tag: payload.tag || "osh-city-event",
     // Вибрация задаётся сервером: срочное событие ощущается длиннее.
